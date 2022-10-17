@@ -1,0 +1,11 @@
+POST http://localhost:5000/api/v1/category/create
+Content-Type: application/json
+
+{
+    "name": "Design Database System",
+    "parent": "634d50b0d78c8a62c4ee2197"
+}
+
+###
+GET http://localhost:5000/api/v1/category/info/634d50b0d78c8a62c4ee2197
+Content-Type: application/json
