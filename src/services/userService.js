@@ -18,6 +18,12 @@ class UserService{
     async getUserById(id) {
         return await User.findById(id);
     }
+
+    async queryUsers(filter, options) {
+        return await User.paginate(filter, options);
+    }
+
+    
 }
 
 module.exports = new UserService
