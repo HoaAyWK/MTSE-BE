@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 
 const UserSchema = new Schema({
     name: {
@@ -48,5 +48,6 @@ const UserSchema = new Schema({
 }, { timestamps: true });
 
 UserSchema.plugin(toJSON);
+UserSchema.plugin(paginate);
 
 module.exports = mongoose.model('User', UserSchema)

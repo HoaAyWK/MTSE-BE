@@ -1,37 +1,76 @@
-const userService = require('../services/userService')
-const {ResponseRegisterUser} = require("../DTOs/userDTO")
-
+const ApiError = require('../utils/ApiError');
+const userService = require('../services/userService');
+const accountService = require('../services/accountService');
+const pick = require('../utils/pick');
 
 
 class UserController{
-    async registerUser(req, res){
-        var response = new ResponseRegisterUser()
-        try{
-            const user = req.body
+    async getUsers(req, res, next) {
+        const filter = pick(req.query, ['name', 'status']);
+        const options = pick(req.query, ['sortBy', 'limit', 'page']);
+        const result = await userService.queryUsers(filter, options);
 
-            const existedUser = await userService.getUserByEmail(user.email)
+        res.status(200).json({
+            success: true,
+            ...result
+        });
+    }
 
-            if (existedUser){
-                response.message = "Existed Email"
-                return res.status(200).json(response)
-            }
+    async getUser(req, res, next) {
+        const user = await userService.getUserById(req.params.id);
 
-            const addedUser = await userService.createUser(user)
-
-            if (addedUser){
-                response.user = addedUser
-                response.success = true
-                response.message = "Register User Successfully"
-                return res.status(200).json(response)
-            }
-            response.message = "Register User Failed"
-            return res.status(200).json(response)
+        if (!user) {
+            return next(new ApiError(404, 'User not found'));
         }
-        catch(error){
-            response.message = "Internal Error Server"
-            return res.status(500).json(response)
+
+        res.status(200).json({
+            success: true,
+            user
+        });
+    }
+
+    async getUserProfile(req, res, next) {
+        const user = await userService.getUserById(req.user.id);
+
+        if (!user) {
+            return next(new ApiError(404, 'User not found'));
+        }
+
+        res.status(200).json({
+            success: true,
+            user
+        });
+    }
+
+    async changePassword(req, res, next) {
+        const userId = req.user.id;
+        const { oldPassword, newPassword } = req.body;
+
+        try {
+            const account = await accountService.getAccountByUserId(userId);
+
+            if (!account) {
+                throw new ApiError(404, 'Account not found');
+            }
+            
+            if (!account.isPasswordMatch(oldPassword)) {
+                throw new ApiError(400, 'Incorrect password');
+            }
+
+            const updatedAccount = await accountService.changePassword(userId, newPassword);
+
+            if (!updatedAccount) {
+                throw new ApiError(500, 'Can not change password');
+            }
+
+            res.status(200).json({
+                success: true,
+                message: 'Password changed'
+            })
+        } catch (error) {
+            next(error);
         }
     }
 }
 
-module.exports = new UserController
+module.exports = new UserController;
