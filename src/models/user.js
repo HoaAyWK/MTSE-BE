@@ -1,13 +1,10 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+const { toJSON } = require('./plugins');
 
 const UserSchema = new Schema({
     name: {
-        type: String,
-        required: true
-    },
-    gender: {
         type: String,
         required: true
     },
@@ -17,15 +14,19 @@ const UserSchema = new Schema({
     },
     gender: {
         type: String,
-        required: true
+        enum: [
+            'None',
+            'Male',
+            'Female'
+        ],
+        default: 'None'
     },
     phone: {
         type: String,
         required: true
     },
     address: {
-        type: String,
-        required: true
+        type: String
     },
     bDate: {
         type: Date
@@ -40,20 +41,12 @@ const UserSchema = new Schema({
         type: Number,
         default: 0
     },
-    createdAt: {
-        type: Date,
-        required: true,
-        default: Date.now()
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now()
-    },
     status: {
         type: Boolean,
         default: true
     }
-})
+}, { timestamps: true });
 
+UserSchema.plugin(toJSON);
 
-module.exports = mongoose.model('users', UserSchema)
+module.exports = mongoose.model('User', UserSchema)

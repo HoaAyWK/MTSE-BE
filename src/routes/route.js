@@ -1,7 +1,7 @@
-const userRouter = require('./routers/userRouter')
+const authRouter = require('./routers/authRouter');
 
 const appRoute = (app) => {
-    app.use("/api/v1/user", userRouter)
-}
+    app.use('/api/v1', authRouter)
+};
 
-module.exports = appRoute
+module.exports = appRoute;
