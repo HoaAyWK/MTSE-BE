@@ -14,3 +14,12 @@ Content-Type: application/json
     "name": "Yolosz",
     "parent": null
 }
+
+
+###
+POST http://localhost:5000/api/v1/wallet/create
+Content-Type: application/json
+
+{
+    "userId": "122222222"
+}
