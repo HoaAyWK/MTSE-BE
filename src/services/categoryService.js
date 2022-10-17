@@ -28,6 +28,18 @@ class CategoryService{
 
         return category
     }
+
+    async editCategory(categoryId ,name, parent){
+        const category = await categorySchema.findById(categoryId)
+
+        if (!category){
+            return null
+        }
+
+        await categorySchema.findByIdAndUpdate(category._id, {name, parent, updatedAt: Date.now()})
+        const editedCategory = await categorySchema.findById(categoryId)
+        return editedCategory
+    }
 }
 
 module.exports = new CategoryService

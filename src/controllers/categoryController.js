@@ -1,5 +1,5 @@
 const categoryService = require('../services/categoryService')
-const {ResponseCreateCategory, ResponseCategoryById} = require("../DTOs/categoryDTO")
+const {ResponseCreateCategory, ResponseCategoryById, ResponseEditCategory} = require("../DTOs/categoryDTO")
 
 class CategoryController{
     async addCategory(req, res){
@@ -49,6 +49,37 @@ class CategoryController{
         }
         catch(error){
 
+        }
+    }
+
+    async editCategory(req, res){
+        const response = new ResponseEditCategory()
+        try{
+            const {name, parent} = req.body
+
+            const id = req.params.id
+            if (!id){
+                response.message = "Invalid Category Id"
+                return res.status(400).json(response)
+            }
+
+            const editedCategory = await categoryService.editCategory(id, name, parent)
+
+            if (!editedCategory){
+                response.message = "Category Not Found"
+                return res.status(404).json(response)
+            }
+
+            response.success = true
+            response.message = "Edit Category Successfully"
+            response.category = editedCategory
+
+            return res.status(200).json(response)
+        }
+        catch(error){
+            response.message = "Error Internal Server"
+
+            return res.status(500).json(response)
         }
     }
 }

@@ -9,4 +9,10 @@ class ResponseCategoryById{
     message = ''
 }
 
-module.exports = {ResponseCreateCategory, ResponseCategoryById}
+class ResponseEditCategory{
+    success = false
+    category = null
+    message = ''
+}
+
+module.exports = {ResponseCreateCategory, ResponseCategoryById, ResponseEditCategory}
