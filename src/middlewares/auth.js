@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
 const userService = require('../services/userService');
 const accountService = require('../services/accountService');
+const { userStatus } = require('../config/userStatus');
 
 class AuthMiddleware {
     async isAuthenticated(req, res, next) {
@@ -14,9 +15,21 @@ class AuthMiddleware {
 
         const { sub } = jwt.verify(token.token, process.env.JWT_SECRET);
         const user = await userService.getUserById(sub);
+
+        if (user.status === userStatus.BANNED) {
+            return next(new ApiError(403, 'Your account is banned'));
+        }
+
+        if (user.status === userStatus.DELETED) {
+            return next(new ApiError(404, 'Your account no longer exists'));
+        }
+
         const account = await accountService.getAccountByUserId(sub);
 
-        req.account = account;
+        if (!account.emailConfirmed) {
+            return next(new ApiError(401, 'Your email is not verified. Please verify your email!'))
+        }
+        
         req.user = user;
 
         next();
@@ -25,7 +38,7 @@ class AuthMiddleware {
     authorizeRoles(...roles) {
         if (roles.length === 1) {
             return (req, res, next) => {
-                if (!req.account.roles.includes(roles[0])) {
+                if (!req.user.roles.includes(roles[0])) {
                     return next(new ApiError(403, 'You do not have permission to access this resource'));
                 }
     
@@ -34,7 +47,7 @@ class AuthMiddleware {
         } else {
             return (req, res, next) => {
                 for (let r of roles) {
-                    if (req.account.roles.includes(r)) {
+                    if (req.user.roles.includes(r)) {
                         return next();
                     }
                 }
