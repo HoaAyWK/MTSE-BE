@@ -8,7 +8,6 @@ const { userStatus } = require('../config/userStatus');
 class AuthService {
     async login(email, password) {
         const user = await userService.getUserByEmail(email);
-
         if (!user) {
             throw new ApiError(400, 'User not found');
         }
