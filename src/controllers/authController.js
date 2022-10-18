@@ -1,8 +1,9 @@
 const accountService = require('../services/accountService');
+const ApiError = require('../utils/ApiError');
 const authService = require('../services/authService');
 const tokenService = require('../services/tokenService');
 const userService = require('../services/userService');
-const ApiError = require('../utils/ApiError');
+const sendEmailService = require('../services/sendEmailService');
 const sendToken = require('../utils/sendToken');
 
 class AuthController {
@@ -28,15 +29,24 @@ class AuthController {
             }
 
             const user = await userService.createUser({ name, email, phone });
-            const account = await accountService.create({ user: user._id, password });
+            await accountService.create({ user: user._id, password });
             const token = await tokenService.generateVerifyEmailToken(user);
 
+            const confirmationEmailUrl = `${req.protocol}://${req.get('host')}/api/v1/email/confirm/${token}`;
+            const message = `Your confirmation email token is as follow:\n\n${confirmationEmailUrl}\n\nIf you have not requested this email, then ignore it.`;
+
+            await sendEmailService.sendEmail({
+                email,
+                subject: 'Confirm Your Email',
+                message
+            });
+            
             res.status(200).json({
                 success: true,
+                message: `Email sent to: ${email}`,
                 confirmEmailToken: token,
-                user,
-                account
             });
+  
         } catch (error) {
             next(error);
         }
@@ -57,9 +67,19 @@ class AuthController {
         try {
             const { email } = req.body;
             const resetToken = await tokenService.generateResetPasswordToken(email);
+            const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/password/reset/${resetToken}`;
+            const message = `Your password reset token is as follow:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`;
 
+           
+            await sendEmailService.sendEmail({
+                email,
+                subject: 'Frl password recovery',
+                message
+            });
+        
             res.status(200).json({
                 success: true,
+                message: `Email sent to: ${email}`,
                 resetPasswordToken: resetToken
             });
         } catch (error) {
@@ -81,7 +101,7 @@ class AuthController {
         } catch (error) {
             next(error);
         }
-    }   
+    }
 
     logout(req, res) {
         res.cookie('token', null, {
