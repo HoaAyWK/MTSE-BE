@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const { compare, hash } = require('bcryptjs');
 
 const { toJSON } = require('./plugins');
-const { roles } = require('../config/roles');
 
 const accountSchema = new mongoose.Schema({
     user: {
@@ -13,11 +12,6 @@ const accountSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
-    },
-    roles: {
-        type: [String],
-        required: true,
-        default: [roles.FREELANCER]
     },
     emailConfirmed: {
         type: Boolean,

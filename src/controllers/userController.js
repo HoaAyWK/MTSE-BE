@@ -2,12 +2,17 @@ const ApiError = require('../utils/ApiError');
 const userService = require('../services/userService');
 const accountService = require('../services/accountService');
 const pick = require('../utils/pick');
+const { userStatus } = require('../config/userStatus');
 
 
 class UserController{
     async getUsers(req, res, next) {
         const filter = pick(req.query, ['name', 'status']);
         const options = pick(req.query, ['sortBy', 'limit', 'page']);
+
+        // Exclude current user
+        filter._id = { $ne: req.user.id };
+
         const result = await userService.queryUsers(filter, options);
 
         res.status(200).json({
@@ -67,6 +72,72 @@ class UserController{
                 success: true,
                 message: 'Password changed'
             })
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateProfile(req, res, next) {
+        try {
+            const user = await userService.updateUser(req.user.id, req.body);
+
+            res.status(200).json({
+                success: true,
+                user
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // This method is only used once when the user registers and doesn't use anywhere else
+    async promoteToEmployer(req, res, next) {
+        try {
+            const user = await userService.promoteToEmployer(req.user.id, req.body);
+
+            res.status(200).json({
+                success: true,
+                user
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async banUser(req, res, next) {
+        try {
+            const user = await userService.changeUserStatus(req.params.id, userStatus.BANNED);
+
+            res.status(200).json({
+                success: true,
+                user
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteUser(req, res, next) {
+        try {
+            const user = await userService.changeUserStatus(req.params.id, userStatus.DELETED);
+
+            res.status(200).json({
+                success: true,
+                user
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteMyAccount(req, res, next) {
+        try {
+            const user = await userService.changeUserStatus(req.user.id, userStatus.DELETED);
+
+            res.status(200).json({
+                success: true,
+                user
+            });
         } catch (error) {
             next(error);
         }
