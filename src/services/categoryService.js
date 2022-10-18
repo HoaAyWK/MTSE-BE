@@ -25,7 +25,6 @@ class CategoryService{
 
     async getCategoryById(categoryId){
         const category = await categorySchema.findById(categoryId)
-
         return category
     }
 

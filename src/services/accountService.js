@@ -7,7 +7,7 @@ class AccountService {
     }
 
     async getAccountByUserId(userId) {
-        return Account.findOne({ user: userId });
+        return await Account.findOne({ user: userId });
     }
 
     async updateAccount(userId, updateBody) {

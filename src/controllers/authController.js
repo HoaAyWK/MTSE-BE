@@ -2,12 +2,14 @@ const accountService = require('../services/accountService');
 const authService = require('../services/authService');
 const tokenService = require('../services/tokenService');
 const userService = require('../services/userService');
+const walletService = require('../services/walletService')
 const ApiError = require('../utils/ApiError');
 const sendToken = require('../utils/sendToken');
 
 class AuthController {
     async login(req, res, next) {
         try {
+            console.log(req.body)
             const user = await authService.login(req.body.email, req.body.password);
             const accessToken = tokenService.generateAuthToken(user);
 
@@ -29,6 +31,7 @@ class AuthController {
 
             const user = await userService.createUser({ name, email, phone });
             const account = await accountService.create({ user: user._id, password });
+            await walletService.createWallet({userId: user._id})
             const token = await tokenService.generateVerifyEmailToken(user);
 
             res.status(200).json({

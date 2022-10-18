@@ -7,7 +7,6 @@ const { tokenTypes } = require('../config/tokens');
 class AuthService {
     async login(email, password) {
         const user = await userService.getUserByEmail(email);
-
         if (!user) {
             throw new ApiError(400, 'User not found');
         }

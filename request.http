@@ -2,8 +2,8 @@ POST http://localhost:5000/api/v1/category/create
 Content-Type: application/json
 
 {
-    "name": "Design Database System",
-    "parent": "634d50b0d78c8a62c4ee2197"
+    "name": "Design System",
+    "parent": "634e02ebeb301ae1622cd161"
 }
 
 ###
@@ -11,8 +11,8 @@ PUT http://localhost:5000/api/v1/category/info/634d5418245ab9a66f38a9c7
 Content-Type: application/json
 
 {
-    "name": "Yolosz",
-    "parent": null
+    "name": "Design System",
+    "parent": "634e02ebeb301ae1622cd161"
 }
 
 
