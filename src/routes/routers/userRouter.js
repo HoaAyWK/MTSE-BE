@@ -1,22 +1,58 @@
 const express = require("express");
 
-const router = express.Router();
-
 const authMiddleware = require('../../middlewares/auth');
 const userController = require('../../controllers/userController');
 const { roles } = require('../../config/roles');
+const { userValidation } = require('../../validations');
+const validate = require('../../middlewares/validate');
+
+const router = express.Router();
 
 router
     .route('/profile')
     .get(
         authMiddleware.isAuthenticated,
-        userController.getUserProfile);
+        userController.getUserProfile)
+    .put(
+        authMiddleware.isAuthenticated,
+        userController.updateProfile
+    )
+    .delete(
+        authMiddleware.isAuthenticated,
+        userController.deleteMyAccount
+    );
 
 router
     .route('/password/change')
-    .post(
+    .put(
         authMiddleware.isAuthenticated,
+        validate(userValidation.changePassword),
         userController.changePassword);
+
+router
+    .route('/profile/promote')
+    .put(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.FREELANCER),
+        validate(userValidation.promoteToEmployer),
+        userController.promoteToEmployer
+    );
+
+router
+    .route('/admin/users/:id/ban')
+    .delete(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.ADMIN),
+        userController.banUser
+    );
+
+router
+    .route('/admin/users/:id/delete')
+    .delete(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.ADMIN),
+        userController.deleteUser
+    );
 
 router
     .route('/admin/users')

@@ -3,6 +3,7 @@ const accountService = require('./accountService');
 const userService = require('./userService');
 const tokenService = require('./tokenService');
 const { tokenTypes } = require('../config/tokens');
+const { userStatus } = require('../config/userStatus');
 
 class AuthService {
     async login(email, password) {
@@ -24,6 +25,14 @@ class AuthService {
 
         if (!account.emailConfirmed) {
             throw new ApiError(401, 'Your email is not verified. Please verify your email!')
+        }
+
+        if (user.status === userStatus.BANNED) {
+            throw new ApiError(403, 'Your account is banned');
+        }
+
+        if (user.status === userStatus.DELETED) {
+            throw new ApiError(400, 'Your account no longer exists');
         }
 
         return user;
