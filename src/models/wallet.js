@@ -4,7 +4,8 @@ const Schema = mongoose.Schema
 const WalletSchema = new Schema({
     userId: {
         type: mongoose.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'User'
     },
     points: {
         type: Number,
