@@ -1,13 +1,19 @@
 const authRouter = require('./routers/authRouter');
 const categoryRouter = require('./routers/categoryRouter');
 const userRouter = require('./routers/userRouter');
-const walletRouter = require("./routers/walletRouter")
+const walletRouter = require("./routers/walletRouter");
+const creditRouter = require('./routers/creditRouter');
+const checkoutRouter = require('./routers/checkoutRouter');
+const paymentRouter = require('./routers/paymentHistoryRouter');
 
 const appRoute = (app) => {
     app.use('/api/v1', authRouter);
     app.use('/api/v1', userRouter);
     app.use("/api/v1/category", categoryRouter);
     app.use('/api/v1/wallet', walletRouter);
+    app.use('/api/v1', creditRouter);
+    app.use('/api/v1', checkoutRouter);
+    app.use('/api/v1', paymentRouter);
 };
 
 module.exports = appRoute;
