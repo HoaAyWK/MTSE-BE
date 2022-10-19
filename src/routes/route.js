@@ -6,6 +6,7 @@ const creditRouter = require('./routers/creditRouter');
 const checkoutRouter = require('./routers/checkoutRouter');
 const paymentRouter = require('./routers/paymentHistoryRouter');
 const jobRouter = require('./routers/jobRouter');
+const commentRouter = require('./routers/commentRouter');
 
 const appRoute = (app) => {
     app.use('/api/v1', authRouter);
@@ -16,6 +17,7 @@ const appRoute = (app) => {
     app.use('/api/v1', checkoutRouter);
     app.use('/api/v1', paymentRouter);
     app.use('/api/v1', jobRouter);
+    app.use('/api/v1', commentRouter);
 };
 
 module.exports = appRoute;
