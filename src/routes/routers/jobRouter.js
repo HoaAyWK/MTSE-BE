@@ -4,7 +4,7 @@ const { roles } = require('../../config/roles');
 const jobController = require('../../controllers/jobController');
 const authMiddleware = require('../../middlewares/auth');
 const ownerMiddleware = require('../../middlewares/owner');
-const { jobValidation } = require('../../validations');
+const { jobValidation, offerValidation } = require('../../validations');
 const validate = require('../../middlewares/validate');
 
 const router = Router();
@@ -48,6 +48,37 @@ router
         ownerMiddleware.isEmployerProvideEnoughInfo,
         validate(jobValidation.createJob),
         jobController.createJob
+    );
+
+router
+    .route('/jobs/:id/offer')
+    .post(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.FREELANCER),
+        ownerMiddleware.isFreelancerProvideEnoughInfo,
+        validate(offerValidation.offerJob),
+        jobController.offerJob
+    );
+
+router
+    .route('/offers')
+    .get(
+        authMiddleware.isAuthenticated,
+        jobController.getFreelancerOffers
+    );
+
+router
+    .route('/offers/:id')
+    .get(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.FREELANCER, roles.EMPLOYER),
+        jobController.getOffer
+    )
+    .delete(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.FREELANCER),
+        ownerMiddleware.isOfferOwner,
+        jobController.cancelOfferJob
     );
 
 router
