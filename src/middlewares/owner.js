@@ -2,6 +2,7 @@ const ApiError = require('../utils/ApiError');
 const paymentHistoryService = require('../services/paymentHistoryService');
 const jobService = require('../services/jobService');
 const offerService = require('../services/offerService');
+const commentService = require('../services/commentService');
 
 class OwnerMiddleware {
     async isPaymentHistoryOwner(req, res, next) {
@@ -50,6 +51,24 @@ class OwnerMiddleware {
 
             if (offer.freelancer.toString() !== req.user.id) {
                 throw new ApiError(400, 'You are not the owner of this offer');
+            }
+
+            next();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async isCommentOwner(req, res, next) {
+        try {
+            const comment = await commentService.getCommentById(req.params.id);
+
+            if (!comment) {
+                throw new ApiError(404, 'Comment not found');
+            }
+
+            if (comment.creator.toString() !== req.user.id) {
+                throw new ApiError(400, 'You are not the owner of this comment');
             }
 
             next();
