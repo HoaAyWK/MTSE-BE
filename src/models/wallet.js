@@ -6,7 +6,7 @@ const WalletSchema = new Schema({
         type: mongoose.Types.ObjectId,
         required: true
     },
-    total: {
+    points: {
         type: Number,
         default: 0
     }

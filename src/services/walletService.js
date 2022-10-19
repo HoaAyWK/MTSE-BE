@@ -28,16 +28,16 @@ class WalletService{
         return wallet
     }
 
-    async addPoint(walletId, point){
+    async addPoint(walletId, points){
         const wallet = await walletSchema.findById(walletId)
 
         if (!wallet){
             return null
         }
 
-        const newPoint = wallet.point + point
+        const newPoint = wallet.points + points
 
-        await walletSchema.findByIdAndUpdate(wallet._id, {point: newPoint})
+        await walletSchema.findByIdAndUpdate(wallet._id, { $set: { points: newPoint }})
 
         const newInfoWallet = await walletSchema.findById(walletId)
 
