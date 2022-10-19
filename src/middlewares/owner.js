@@ -1,6 +1,7 @@
 const ApiError = require('../utils/ApiError');
 const paymentHistoryService = require('../services/paymentHistoryService');
 const jobService = require('../services/jobService');
+const offerService = require('../services/offerService');
 
 class OwnerMiddleware {
     async isPaymentHistoryOwner(req, res, next) {
@@ -39,12 +40,42 @@ class OwnerMiddleware {
         }
     }
 
+    async isOfferOwner(req, res, next) {
+        try {
+            const offer = await offerService.getOfferById(req.params.id);
+
+            if (!offer) {
+                throw new ApiError(404, 'Offer not found');
+            }
+
+            if (offer.freelancer.toString() !== req.user.id) {
+                throw new ApiError(400, 'You are not the owner of this offer');
+            }
+
+            next();
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async isEmployerProvideEnoughInfo(req, res, next) {
         try {
             if (!(await req.user.isEnoughInfoToPost())) {
                 throw new ApiError(400, 'You are not providing enough infomation to create a job');
             }
     
+            next();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async isFreelancerProvideEnoughInfo(req, res, next) {
+        try {
+            if (!(await req.user.isEnoughInfoToOfferJob())) {
+                throw new ApiError(400, 'You are not providing enough information to offer a job');
+            }
+
             next();
         } catch (error) {
             next(error);
