@@ -1,8 +1,25 @@
-const categorySchema = require("../models/category")
+const Category = require("../models/category");
+const ApiError = require("../utils/ApiError");
+const jobService = require('./jobService');
 
 class CategoryService{
     async createCategory(category){
-        const newCategory = new categorySchema(category)
+        const { parent } = category;
+        let parentCategory = undefined;
+
+
+        const newCategory = new Category(category)
+
+        if (parent) {
+            parentCategory = await Category.findById(parent);
+
+            if (!parentCategory) {
+                throw new ApiError(404, 'Parent category not found')
+            }
+
+            parentCategory.children.push(newCategory.id);
+            await parentCategory.save();
+        }
 
         await newCategory.save()
 
@@ -18,26 +35,106 @@ class CategoryService{
         const lstChildren = category.children
 
         lstChildren.push(categoryChildId)
-        const newCategory = await categorySchema.findOneAndUpdate({_id: category._id}, {children: lstChildren})
+        const newCategory = await Category.findOneAndUpdate({_id: category.id}, {children: lstChildren})
 
         return newCategory
     }
 
     async getCategoryById(categoryId){
-        const category = await categorySchema.findById(categoryId)
+        const category = await Category.findById(categoryId)
         return category
     }
 
-    async editCategory(categoryId ,name, parent){
-        const category = await categorySchema.findById(categoryId)
+    async editCategory(categoryId, updateBody){
+        const { name, parent } = updateBody;
+        const category = await Category.findById(categoryId)
 
         if (!category){
-            return null
+            throw new ApiError(404, 'Category not found');
         }
 
-        await categorySchema.findByIdAndUpdate(category._id, {name, parent, updatedAt: Date.now()})
-        const editedCategory = await categorySchema.findById(categoryId)
-        return editedCategory
+        if (name) {
+            const nameExist = await Category.findOne({ name }).lean();
+
+            if (nameExist) {
+                throw new ApiError(404, `Category with name: ${name} already exists`);
+            }
+        }
+
+        let parentCategory = undefined;
+
+        if (parent) {
+            parentCategory = await Category.findById(parent);
+
+            if (!parentCategory) {
+                throw new ApiError(404, 'Parent category not found');
+            }
+
+            if (category.children.length > 0) {
+                throw new ApiError(400, `Cannot attach this category to another category because it already has children's category`);
+            }
+        }
+
+        const updatedCategory = await Category.findByIdAndUpdate(
+            categoryId,
+            {
+                $set: updateBody
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (parentCategory) {
+            parentCategory.children.push(updatedCategory.id);
+            await parentCategory.save();
+        }
+    
+        return updatedCategory;
+    }
+
+    async deleteCategory(id) {
+        const category = await Category.findById(id);
+
+        if (!category) {
+            throw new ApiError(404, 'Category not found');
+        }
+
+        if (category.children.length > 0) {
+            throw new ApiError(400, `Please delete all this children's category first!`);
+        }
+
+        const jobsCount = await jobService.countJobsByCategory(id);
+
+        if (jobsCount > 0) {
+            throw new ApiError(400, 'This category already have jobs')
+        }
+
+        if (category.parent) {
+            const parentCategory = await Category.findById(category.parent);
+
+            if (!parentCategory) {
+                throw new ApiError(404, 'Parent category not found');
+            }
+
+            parentCategory.children = parentCategory.children.filter(item => item.toString() !== id);
+            await parentCategory.save();
+        }
+
+        await category.remove();
+    }
+
+    async getCategories() {
+        return Category.find();
+    }
+
+    async getCategoryWithChildrenById(id) {
+        return Category.findById(id).populate('children');
+    }
+
+    async getCategoriesNoParentWithChildren() {
+        return Category.find({ parent: undefined }).populate('children');
     }
 }
 

@@ -1,30 +1,27 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+const { toJSON } = require('./plugins');
 
 const CategorySchema = new Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     parent: {
         type: Schema.Types.ObjectId,
         ref: 'categories'
     },
     children: {
-        type: [{type: Schema.Types.ObjectId, ref: "categories"}],
+        type: [{type: Schema.Types.ObjectId, ref: "Category"}],
         required: true,
         default: []
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now()
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now()
     }
+}, { timestamps: true });
 
-})
+CategorySchema.plugin(toJSON);
 
-module.exports = mongoose.model('categories', CategorySchema)
+const Category = mongoose.model('Category', CategorySchema);
+
+module.exports = Category;

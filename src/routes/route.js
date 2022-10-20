@@ -13,7 +13,7 @@ const transactionRouter = require('./routers/transactionRouter')
 const appRoute = (app) => {
     app.use('/api/v1', authRouter);
     app.use('/api/v1', userRouter);
-    app.use("/api/v1/category", categoryRouter);
+    app.use("/api/v1", categoryRouter);
     app.use('/api/v1/wallet', walletRouter);
     app.use('/api/v1', creditRouter);
     app.use('/api/v1', checkoutRouter);

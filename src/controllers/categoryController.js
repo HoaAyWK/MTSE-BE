@@ -1,5 +1,6 @@
 const categoryService = require('../services/categoryService')
 const {ResponseCreateCategory, ResponseCategoryById, ResponseEditCategory} = require("../DTOs/categoryDTO")
+const ApiError = require('../utils/ApiError')
 
 class CategoryController{
     async addCategory(req, res){
@@ -10,13 +11,6 @@ class CategoryController{
             const addedCategory = await categoryService.createCategory(category)
 
             if (addedCategory){
-                if (category.parent){
-                    const updatedParentCategory = await categoryService.addChild(category.parent, addedCategory._id)
-                    if (!updatedParentCategory){
-                        response.messgae = "Not Found Category Parent"
-                        return res.status(400).json(response)
-                    }
-                }
                 response.success = true
                 response.category = addedCategory
                 response.message = "Create Category Successfully"
@@ -48,22 +42,20 @@ class CategoryController{
             return res.status(200).json(response)
         }
         catch(error){
-
+            next(error);
         }
     }
 
     async editCategory(req, res){
         const response = new ResponseEditCategory()
         try{
-            const {name, parent} = req.body
-
             const id = req.params.id
             if (!id){
                 response.message = "Invalid Category Id"
                 return res.status(400).json(response)
             }
 
-            const editedCategory = await categoryService.editCategory(id, name, parent)
+            const editedCategory = await categoryService.editCategory(id, req.body)
 
             if (!editedCategory){
                 response.message = "Category Not Found"
@@ -80,6 +72,65 @@ class CategoryController{
             response.message = "Error Internal Server"
 
             return res.status(500).json(response)
+        }
+    }
+
+    async getCategories(req, res, next) {
+        try {
+            const categories = await categoryService.getCategories();
+
+            res.status(200).json({
+                success: true,
+                count: categories.length,
+                categories
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getCategoriesNoParentWithChildren(req, res, next) {
+        try {
+            const categories = await categoryService.getCategoriesNoParentWithChildren();
+
+            res.status(200).json({
+                success: true,
+                count: categories.length,
+                categories
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getCategoryWithChildren(req, res, next) {
+        try {
+            const category = await categoryService.getCategoryWithChildrenById(req.params.id);
+
+            if (!category) {
+                throw new ApiError(404, 'Category not found');
+            }
+
+            res.status(200).json({
+                success: true,
+                category
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteCategory(req, res, next) {
+        try {
+            const id = req.params.id;
+            await categoryService.deleteCategory(id);
+
+            res.status(200).json({
+                success: true,
+                message: `Deleted category with id: ${id}`
+            });
+        } catch (error) {
+            next(error);
         }
     }
 }

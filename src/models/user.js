@@ -61,7 +61,7 @@ const UserSchema = new Schema({
     companyRole: String,
     introduction: String,
     identityNumber: String,
-    experients: String
+    experience: String
 }, { timestamps: true });
 
 UserSchema.plugin(toJSON);
