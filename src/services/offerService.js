@@ -26,6 +26,10 @@ class OfferService {
         return Offer.findOne({ job: jobId, freelancer: freelancerId });
     }
 
+    async getOfferByJobAndNeStatus(jobId, status) {
+        return Offer.findOne({ job: jobId, status: { $ne: status }});
+    }
+
     async updateOffer(id, updateBody) {
         const offer = await Offer.findById(id).lean();
 

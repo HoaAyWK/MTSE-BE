@@ -69,6 +69,21 @@ class JobService {
     async getOffersByFreelancer(freelancerId) {
         return await offerService.getOffersByFreelancer(freelancerId);
     }
+
+    async getOffersByJob(jobId) {
+        return await offerService.getOffersByJob(jobId);
+    }
+
+    async selectOffer(jobId, offerId) {
+        const isSelected = await offerService.getOfferByJobAndNeStatus(jobId, offerStatus.PENDING);
+
+        if (isSelected) {
+            throw new ApiError(400, 'This job already select freelancer');
+        }
+
+        await Job.findByIdAndUpdate(jobId, { $set: { status: jobStatus.SELECTED_FREELANCER }});
+        return await offerService.updateOffer(offerId, { status: offerStatus.ACCEPTED });
+    }
 };
 
 module.exports = new JobService;

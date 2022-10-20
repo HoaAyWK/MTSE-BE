@@ -123,6 +123,20 @@ class JobController {
         }
     }
 
+    async getOffersByJob(req, res, next) {
+        try {
+            const offers = await jobService.getOffersByJob(req.params.id);
+
+            res.status(200).json({
+                success: true,
+                count: offers.length,
+                offers
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async offerJob(req, res, next) {
         try {
             const offerData = req.body;
@@ -178,6 +192,19 @@ class JobController {
         } catch (error) {
             next(error);
         } 
+    }
+
+    async selectOffer(req, res, next) {
+        try {
+            const offer = await jobService.selectOffer(req.query.jobId, req.params.id);
+
+            res.status(200).json({
+                success: true,
+                offer
+            });
+        } catch (error) {
+            next(error);   
+        }
     }
 }
 

@@ -24,7 +24,7 @@ router
     );
 
 router
-    .route('/jobs/my')
+    .route('/my/jobs')
     .get(
         authMiddleware.isAuthenticated,
         authMiddleware.isAuthenticated,
@@ -60,8 +60,13 @@ router
         jobController.offerJob
     );
 
+router.route('/jobs/:id/offers')
+    .get(
+        jobController.getOffersByJob
+    )
+
 router
-    .route('/offers')
+    .route('/my/offers')
     .get(
         authMiddleware.isAuthenticated,
         jobController.getFreelancerOffers
@@ -72,7 +77,13 @@ router
     .get(
         authMiddleware.isAuthenticated,
         authMiddleware.authorizeRoles(roles.FREELANCER, roles.EMPLOYER),
+        ownerMiddleware.isOfferOwner,
         jobController.getOffer
+    )
+    .put(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.EMPLOYER),
+        jobController.selectOffer
     )
     .delete(
         authMiddleware.isAuthenticated,

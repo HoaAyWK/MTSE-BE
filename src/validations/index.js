@@ -4,5 +4,6 @@ module.exports.commentValidation = require('./commentValidation');
 module.exports.creditValidation = require('./creditValidation');
 module.exports.jobValidation = require('./jobValidation');
 module.exports.offerValidation = require('./offerValidation');
+module.exports.taskValidation = require('./taskValidation');
 module.exports.paymentHistoryValidation = require('./paymentHistoryValidation');
 module.exports.userValidation = require('./userValidation');
