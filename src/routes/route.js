@@ -8,6 +8,7 @@ const paymentRouter = require('./routers/paymentHistoryRouter');
 const jobRouter = require('./routers/jobRouter');
 const commentRouter = require('./routers/commentRouter');
 const taskRouter = require('./routers/taskRouter');
+const transactionRouter = require('./routers/transactionRouter')
 
 const appRoute = (app) => {
     app.use('/api/v1', authRouter);
@@ -19,6 +20,7 @@ const appRoute = (app) => {
     app.use('/api/v1', paymentRouter);
     app.use('/api/v1', jobRouter);
     app.use('/api/v1', commentRouter);
+    app.use('/api.v1/transaction', transactionRouter)
     app.use('/api/v1', taskRouter);
 };
 
