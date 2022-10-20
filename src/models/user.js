@@ -88,7 +88,7 @@ UserSchema.methods.isEnoughInfoToPost = async function() {
 UserSchema.methods.isEnoughInfoToOfferJob = async function() {
     if (!this.introduction||
         !this.identityNumber ||
-        !this.experients ||
+        !this.experience ||
         !this.address ||
         !this.city ||
         !this.country) {
