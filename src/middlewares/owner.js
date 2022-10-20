@@ -34,7 +34,7 @@ class OwnerMiddleware {
             if (job.owner.toString() !== req.user.id) {
                 throw new ApiError(403, 'You are not the owner of this job');
             }
-
+            
             next();
         } catch (error) {
             next(error);
