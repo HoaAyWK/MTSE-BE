@@ -17,6 +17,10 @@ class JobService {
         return Job.create(jobBody);
     }
 
+    async countJobsByCategory(categoryId) {
+        return Job.count({ category: categoryId });
+    }
+
     async deleteJob(id) {
         const job = await Job.findById(id).lean();
 

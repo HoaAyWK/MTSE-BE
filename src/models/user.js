@@ -61,7 +61,7 @@ const UserSchema = new Schema({
     companyRole: String,
     introduction: String,
     identityNumber: String,
-    experients: String
+    experience: String
 }, { timestamps: true });
 
 UserSchema.plugin(toJSON);
@@ -88,7 +88,7 @@ UserSchema.methods.isEnoughInfoToPost = async function() {
 UserSchema.methods.isEnoughInfoToOfferJob = async function() {
     if (!this.introduction||
         !this.identityNumber ||
-        !this.experients ||
+        !this.experience ||
         !this.address ||
         !this.city ||
         !this.country) {
