@@ -1,5 +1,5 @@
-const walletSchema = require('../models/wallet')
-
+const Wallet = require('../models/wallet')
+const pointHistoryService = require('./pointHistoryService')
 
 class WalletService{
     async createWallet(wallet){
@@ -9,7 +9,7 @@ class WalletService{
             return null
         }
 
-        const newWallet = new walletSchema(wallet)
+        const newWallet = new Wallet(wallet)
 
         await newWallet.save()
 
@@ -17,19 +17,19 @@ class WalletService{
     }
 
     async getWalletById(walletId){
-        const wallet = await walletSchema.findById(walletId)
+        const wallet = await Wallet.findById(walletId)
 
         return wallet
     }
 
     async getWalletByUser(userId){
-        const wallet = await walletSchema.findOne({userId})
+        const wallet = await Wallet.findOne({userId})
 
         return wallet
     }
 
     async addPoint(walletId, points){
-        const wallet = await walletSchema.findById(walletId)
+        const wallet = await Wallet.findById(walletId)
 
         if (!wallet){
             return null
@@ -37,13 +37,12 @@ class WalletService{
 
         const newPoint = wallet.points + points
 
-        await walletSchema.findByIdAndUpdate(wallet._id, { $set: { points: newPoint }})
+        await Wallet.findByIdAndUpdate(wallet._id, { $set: { points: newPoint }})
 
-        const newInfoWallet = await walletSchema.findById(walletId)
+        const newInfoWallet = await Wallet.findById(walletId)
 
         return newInfoWallet
     }
-
 
     async handlePoint(walletId, money, handle){
         const wallet = await walletSchema.findById(walletId)
@@ -62,7 +61,6 @@ class WalletService{
 
         return true
     }
-
 }
 
 module.exports = new WalletService

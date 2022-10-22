@@ -202,7 +202,7 @@ class JobController {
 
     async selectOffer(req, res, next) {
         try {
-            const offer = await jobService.selectOffer(req.query.jobId, req.params.id);
+            const offer = await jobService.selectOffer(req.user.id, req.query.jobId, req.params.id);
 
             res.status(200).json({
                 success: true,
