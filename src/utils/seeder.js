@@ -11,12 +11,12 @@ const Job = require('../models/job');
 const { connectDatabase } = require('../config/database');
 const { userStatus } = require('../config/userStatus');
 const { roles } = require('../config/roles');
+const { adminId, systemAdminId } = require('../config/constants');
 
 connectDatabase();
 
 const employerId = new mongoose.Types.ObjectId();
 const freelancerId = new mongoose.Types.ObjectId();
-const adminId = new mongoose.Types.ObjectId();
 
 const designCategoryId = new mongoose.Types.ObjectId();
 const developmentCategoryId = new mongoose.Types.ObjectId();
@@ -191,6 +191,24 @@ const seedUsers = async () => {
             status: userStatus.ACTIVE
         };
 
+
+        const systemAdmin = {
+            _id: systemAdminId,
+            name: 'system admin',
+            email: 'sysadmin@gmail.com',
+            phone: '0213032490',
+            roles: [
+                roles.ADMIN
+            ],
+            status: userStatus.ACTIVE
+        }
+
+        const systemAdminAccount = {
+            user: systemAdminId,
+            password: '123456',
+            emailConfirmed: true
+        }
+
         const employerAccount = {
             user: employerId,
             password: '123456',
@@ -212,12 +230,15 @@ const seedUsers = async () => {
         await User.create(employer);
         await User.create(admin);
         await User.create(freelancer);
+        await User.create(systemAdmin);
         await Account.create(employerAccount);
         await Account.create(freelancerAccount);
         await Account.create(adminAccount);
-        await Wallet.create({ userId: employerId });
-        await Wallet.create({ userId: freelancerId });
-        await Wallet.create({ userId: adminId });
+        await Account.create(systemAdminAccount);
+        await Wallet.create({ user: employerId });
+        await Wallet.create({ user: freelancerId });
+        await Wallet.create({ user: adminId });
+        await Wallet.create({ user: systemAdminId });
 
         console.log('Created 3 users with 3 accounts, 3 wallets');
     } catch (error) {
