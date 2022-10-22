@@ -100,4 +100,6 @@ router
         jobController.deleteJob
     );
 
+router.route('/accept').post(authMiddleware.isAuthenticated, jobController.acceptJob)
+
 module.exports = router;

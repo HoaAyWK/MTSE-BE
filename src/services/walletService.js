@@ -43,6 +43,24 @@ class WalletService{
 
         return newInfoWallet
     }
+
+    async handlePoint(walletId, money, handle){
+        const wallet = await walletSchema.findById(walletId)
+        if (!wallet){
+            return false
+        }
+        const newPoints = 0
+        if (handle == true){
+            newPoints = wallet.points + money
+        }
+        else{
+            newPoints = wallet.points - money
+        }
+
+        await walletSchema.findByIdAndUpdate(walletId, {points: newPoints})
+
+        return true
+    }
 }
 
 module.exports = new WalletService

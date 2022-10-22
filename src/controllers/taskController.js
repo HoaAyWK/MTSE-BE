@@ -2,6 +2,9 @@ const taskService = require('../services/taskService');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
 const { taskStatus } = require('../config/taskStatus');
+const offerService = require('../services/offerService');
+const walletService = require('../services/walletService');
+const jobService = require('../services/jobService');
 
 class CommentController {
     async createTask(req, res, next) {
@@ -63,6 +66,20 @@ class CommentController {
     async doneTask(req, res, next) {
         try {
             const task = await taskService.doneTask(req.user.id, req.params.id);
+            
+            const allTasks = await taskService.getTasksByJob(req.user.id, task.jobId)
+            const completedTasks = await taskService.getTaskByJobAndProcess(task.jobId, taskStatus.FINISHED)
+            const job = await jobService.getJobById(task.jobId)
+
+            if (45 < ((completedTasks.lenth/allTasks.length) * 100) < 55 && job.half == false){
+                job.half = true
+                const edittedJob = await jobService.updateHalf(job)
+                /* const offer = await offerService.getOffersByJob(task.jobId)
+
+                const sendMoney = offer.point*0.2
+                const walletFreelancer = await walletService.getWalletByUser(req.user.id)
+                await walletService.handlePoint(walletFreelancer._id, sendMoney, true) */
+            }
 
             res.status(200).json({
                 success: true,

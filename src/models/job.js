@@ -57,6 +57,10 @@ const jobSchema = new mongoose.Schema({
     freelancer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    half: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

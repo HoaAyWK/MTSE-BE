@@ -110,6 +110,14 @@ class JobService {
         
         return offer;
     }
+
+    async updateJob(job){
+        await Job.findByIdAndUpdate(job._id, job)
+        const job = await Job.findById(jobId)
+        return job
+    }
+
+
 };
 
 module.exports = new JobService;
