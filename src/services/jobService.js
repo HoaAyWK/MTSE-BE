@@ -88,6 +88,14 @@ class JobService {
         await Job.findByIdAndUpdate(jobId, { $set: { status: jobStatus.SELECTED_FREELANCER }});
         return await offerService.updateOffer(offerId, { status: offerStatus.ACCEPTED });
     }
+
+    async updateJob(job){
+        await Job.findByIdAndUpdate(job._id, job)
+        const job = await Job.findById(jobId)
+        return job
+    }
+
+
 };
 
 module.exports = new JobService;

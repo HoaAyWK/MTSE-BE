@@ -1,5 +1,6 @@
 const ApiError = require('../utils/ApiError');
 const Offer = require('../models/offer');
+const { offerStatus } = require('../config/offerStatus');
 
 class OfferService {
     async createOffer(offerBody) {
@@ -52,6 +53,17 @@ class OfferService {
     async deleteOffer(id) {
         await Offer.findByIdAndDelete(id);
     }
+
+    async acceptOffer(offerId){
+        const offer = await Offer.findById(offerId)
+        const lstOffers = await Offer.find({jobId: offer.jobId})
+        lstOffers.forEach(async (item) => {
+            await Offer.findOneAndUpdate({jobId: item.jobId}, {status: offerStatus.REJECTED})
+        })
+        await Offer.findByIdAndUpdate(offerId, {status: offerStatus.ACCEPTED})
+        return true
+    }
+
 }
 
 module.exports = new OfferService;

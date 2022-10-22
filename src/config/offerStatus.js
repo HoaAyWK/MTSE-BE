@@ -2,7 +2,8 @@ const offerStatus = {
     PENDING: 'Pending',
     SELECTED: 'Selected',
     WAITING: 'Waiting',
-    ACCEPTED: 'Accepted'
+    ACCEPTED: 'Accepted',
+    REJECTED: 'Rejected'
 };
 
 module.exports = {
