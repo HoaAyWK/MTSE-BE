@@ -2,13 +2,13 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const PointHistorySchema = new Schema({
-    walletId: {
+    wallet: {
         type: mongoose.Types.ObjectId,
-        ref: 'wallets'
+        ref: 'Wallet'
     },
-    senderId: {
+    sender: {
         type: mongoose.Types.ObjectId,
-        ref: 'users'
+        ref: 'User'
     },
     point: {
         type: Number,
@@ -18,6 +18,8 @@ const PointHistorySchema = new Schema({
         type: Date,
         default: Date.now()
     }
-})
+});
 
-module.exports = mongoose.model('pointHistories', PointHistorySchema)
+const PointHistory = mongoose.model('PointHistory', PointHistorySchema)
+
+module.exports = PointHistory;

@@ -1,8 +1,10 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+const { toJSON } = require('./plugins');
+
 const WalletSchema = new Schema({
-    userId: {
+    user: {
         type: mongoose.Types.ObjectId,
         required: true,
         ref: 'User'
@@ -11,6 +13,10 @@ const WalletSchema = new Schema({
         type: Number,
         default: 0
     }
-})
+});
 
-module.exports = mongoose.model('wallets', WalletSchema)
+WalletSchema.plugin(toJSON);
+
+const Wallet = mongoose.model('Wallet', WalletSchema)
+
+module.exports = Wallet;

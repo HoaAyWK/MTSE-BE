@@ -2,6 +2,7 @@ const ApiError = require('../utils/ApiError');
 const Job = require('../models/job');
 const { jobStatus } = require('../config/jobStatus');
 const offerService = require('./offerService');
+const walletService = require('./walletService');
 const { offerStatus } = require('../config/offerStatus');
 
 class JobService {
@@ -78,15 +79,36 @@ class JobService {
         return await offerService.getOffersByJob(jobId);
     }
 
-    async selectOffer(jobId, offerId) {
-        const isSelected = await offerService.getOfferByJobAndNeStatus(jobId, offerStatus.PENDING);
+    async selectOffer(userId, jobId, offerId) {
+        const wallet = await walletService.getWalletByUser(userId);
+
+        if (!wallet) {
+            throw new ApiError(404, 'Wallet not found');
+        }
+
+        const isSelected = await offerService.getOfferByJobAndNeStatus(jobId, offerStatus.SELECTED);
 
         if (isSelected) {
             throw new ApiError(400, 'This job already select freelancer');
         }
 
-        await Job.findByIdAndUpdate(jobId, { $set: { status: jobStatus.SELECTED_FREELANCER }});
-        return await offerService.updateOffer(offerId, { status: offerStatus.ACCEPTED });
+        const offer = await offerService.getOfferById(offerId);
+
+        if (!offer) {
+            throw new ApiError(404, "Offer not found");
+        }
+
+        const threshold = offer.price * 0.3;
+
+        if (wallet.points < threshold) {
+            throw new ApiError(400, `This offer requires ${threshold} to select`);
+        }
+
+        await Job.findByIdAndUpdate(jobId, { $set: { status: jobStatus.SELECTED_FREELANCER, startDate: Date.now() }});
+        offer.status = offerStatus.SELECTED;
+        await offer.save();
+        
+        return offer;
     }
 };
 
