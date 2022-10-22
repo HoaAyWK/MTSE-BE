@@ -318,6 +318,8 @@ class JobController {
                 }
             }
             if (updated==true && job.numReports == 3){
+                job.status = jobStatus.CANCELLED
+                await jobService.updateJob(job)
                 const offer = await offerService.getOffersByJob(jobId)
                 const coeff = 0.3
                 if (job.half == true){
