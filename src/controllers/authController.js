@@ -30,8 +30,8 @@ class AuthController {
             }
 
             const user = await userService.createUser({ name, email, phone });
-            await walletService.createWallet({userId: user._id});
-            await accountService.create({ user: user._id, password });
+            await walletService.createWallet({user: user.id});
+            await accountService.create({ user: user.id, password });
             const token = await tokenService.generateVerifyEmailToken(user);
 
             const confirmationEmailUrl = `${req.protocol}://${req.get('host')}/api/v1/email/confirm/${token}`;
