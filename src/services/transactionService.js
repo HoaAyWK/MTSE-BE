@@ -1,9 +1,13 @@
-const transactionSchema = require('../models/transaction')
+const Transaction = require('../models/transaction')
 
 
-class TransactionService{
+class TransactionService {
+    async queryTransactions(filter, options) {
+        return Transaction.paginate(filter, options);
+    }
+
     async saveTransaction(transaction){
-        const newTransaction = new transactionSchema(transaction)
+        const newTransaction = new Transaction(transaction)
 
         await newTransaction.save()
 
@@ -12,31 +16,31 @@ class TransactionService{
 
 
     async changeSubmit(transactionId){
-        const transaction = await transactionSchema.findById(transactionId)
+        const transaction = await Transaction.findById(transactionId);
 
-        if (!transaction){
-            return null
+        if (!transaction) {
+            throw new ApiError(400, 'Transaction not found');
         }
         
-        const status = transaction.status
+        transaction.status = true;
+        transaction.submittedDate = Date.now();
 
-        await transactionSchema.findByIdAndUpdate(transaction._id, {status: !status, submittedDate: Date.now()})
+        await transaction.save();
 
-        return await transactionSchema.findById(transactionId)
-
+        return transaction;
     }
 
     async getTransactionByUserId(userId){
-        return await transactionSchema.find({userId})
+        return await Transaction.find({ user: userId })
     }
 
     async getTransactionBySubmit(status){
-        return await transactionSchema.find({status})
+        return await Transaction.find({ status })
     }
 
     async getTransactionByDate(status, date){
-        return await transactionSchema.find({status, submittedDate: date})
+        return await Transaction.find({ status, submittedDate: date })
     }
 }
 
-module.exports = new TransactionService
+module.exports = new TransactionService;

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+const { toJSON, paginate } = require('./plugins');
+
 
 const TransactionSchema = new Schema({
     user: {
@@ -27,6 +29,11 @@ const TransactionSchema = new Schema({
         type: Date,
         default: null
     }
-})
+});
 
-module.exports = mongoose.model('transactions', TransactionSchema)
+TransactionSchema.plugin(toJSON);
+TransactionSchema.plugin(paginate);
+
+const Transaction = mongoose.model('Transaction', TransactionSchema);
+
+module.exports = Transaction;
