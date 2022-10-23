@@ -93,13 +93,42 @@ router
     );
 
 router
+    .route('/jobs/:id/pending-start')
+    .put(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.EMPLOYER),
+        jobController.pendingFreelancerStart
+    );
+
+router
+    .route('/jobs/:id/start')
+    .put(
+        authMiddleware.isAuthenticated,
+        jobController.startJob
+    );
+
+router
+    .route('/jobs/:id/finish')
+    .put(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.EMPLOYER),
+        jobController.doneJob
+    );
+
+router
+    .route('/jobs/:id/report')
+    .put(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.EMPLOYER),
+        jobController.reportUser
+    );
+
+router
     .route('/admin/jobs/:id')
     .delete(
         authMiddleware.isAuthenticated,
         authMiddleware.authorizeRoles(roles.ADMIN),
         jobController.deleteJob
     );
-
-router.route('/accept').post(authMiddleware.isAuthenticated, jobController.acceptJob)
 
 module.exports = router;

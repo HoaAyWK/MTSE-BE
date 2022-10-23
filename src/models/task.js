@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const { toJSON, paginate } = require('./plugins');
-const { taskProcess } = require('../config/taskProcess');
 const { taskStatus } = require('../config/taskStatus');
 
 const taskSchema = new mongoose.Schema({
@@ -13,14 +12,6 @@ const taskSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
-    },
-    process: {
-        type: String,
-        required: true,
-        enum: [
-            taskProcess.HALF,
-            taskProcess.FINISH
-        ]
     },
     status: {
         type: String,
