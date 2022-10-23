@@ -10,6 +10,7 @@ const commentRouter = require('./routers/commentRouter');
 const taskRouter = require('./routers/taskRouter');
 const transactionRouter = require('./routers/transactionRouter');
 const pointHisories = require('./routers/pointHistoryRouter');
+const docsRoutes = require('./docRoutes');
 
 const appRoute = (app) => {
     app.use('/api/v1', authRouter);
@@ -24,6 +25,7 @@ const appRoute = (app) => {
     app.use('/api/v1', transactionRouter)
     app.use('/api/v1', taskRouter);
     app.use('/api/v1', pointHisories);
+    app.use('/docs', docsRoutes);
 };
 
 module.exports = appRoute;

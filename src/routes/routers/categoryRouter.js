@@ -44,3 +44,31 @@ router
 router.put('/:id', categoryController.editCategory)
 
 module.exports = router
+
+
+/**
+ * @swagger
+ * tags:
+ *   name: Categories
+ */
+
+/**
+ * @swagger
+ * /api/v1/categories/create:
+ *  post:
+ *      summary: Create new category
+ *      tags: [Categories]
+ *      requestBody:
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      required:
+ *                          - name
+ *                      properties:
+ *                          name:
+ *                              type: string
+ *                          parent:
+ *                              type: string
+ * 
+ */
