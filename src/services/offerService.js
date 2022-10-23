@@ -27,6 +27,10 @@ class OfferService {
         return Offer.findOne({ job: jobId, freelancer: freelancerId });
     }
 
+    async getOfferByJobAndStatus(jobId, status) {
+        return Offer.findOne({ job: jobId, status });
+    }
+
     async getOfferByJobAndNeStatus(jobId, status) {
         return Offer.findOne({ job: jobId, status: { $ne: status }});
     }
@@ -54,16 +58,16 @@ class OfferService {
         await Offer.findByIdAndDelete(id);
     }
 
-    async acceptOffer(offerId){
-        const offer = await Offer.findById(offerId)
-        const lstOffers = await Offer.find({jobId: offer.jobId})
-        lstOffers.forEach(async (item) => {
-            await Offer.findOneAndUpdate({jobId: item.jobId}, {status: offerStatus.REJECTED})
-        })
-        await Offer.findByIdAndUpdate(offerId, {status: offerStatus.ACCEPTED})
-        return true
-    }
+    async acceptOffer(offer) {
+        const lstOffers = await Offer.find({job: offer.job});
 
+        lstOffers.forEach(async (item) => {
+            await Offer.findByIdAndUpdate(item.id, { status: offerStatus.REJECTED });
+        });
+
+        offer.status = offerStatus.ACCEPTED;
+        await offer.save();
+    }
 }
 
 module.exports = new OfferService;

@@ -26,7 +26,9 @@ const offerSchema = new mongoose.Schema({
         type: String,
         enum: [
             offerStatus.PENDING,
-            offerStatus.ACCEPTED
+            offerStatus.SELECTED,
+            offerStatus.ACCEPTED,
+            offerStatus.REJECTED
         ],
         default: offerStatus.PENDING
     }

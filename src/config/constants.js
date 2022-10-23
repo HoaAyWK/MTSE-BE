@@ -1,15 +1,10 @@
-const mongoose = require('mongoose');
-
-
 // luu tien bao hiem
-const adminId = new mongoose.Types.ObjectId("6353bb23e745a340f2dcb8d1");
+const adminEmail = "admin@gmail.com"
 
 // luu tien hoa hong
-const systemAdminId = new mongoose.Types.ObjectId("6353bb3476a3d476341f6028");
-
-console.log(systemAdminId);
+const systemAdminEmail = "systemadmin@gmail.com";
 
 module.exports = {
-    adminId,
-    systemAdminId
+    adminEmail,
+    systemAdminEmail
 }

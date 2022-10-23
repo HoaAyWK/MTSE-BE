@@ -1,28 +1,15 @@
 const ApiError = require('../utils/ApiError');
 const Task = require('../models/task');
-const jobService = require('./jobService');
 const { jobStatus } = require('../config/jobStatus');
 const offerService = require('./offerService');
 const { offerStatus } = require('../config/offerStatus');
 const { roles } = require('../config/roles');
 const { taskStatus } = require('../config/taskStatus');
+const walletService = require('./walletService');
+const pointHistoryService = require('./pointHistoryService');
 
 class TaskService {
-    async createTask(userId, taskBody) {
-        const job = await jobService.getJobById(taskBody.job);
-
-        if (!job) {
-            throw new ApiError(404, 'Job not found');
-        }
-
-        if (job.owner.toString() !== userId) {
-            throw new ApiError(400, 'You are not the owner of this job');
-        }
-
-        if (job.status !== jobStatus.OPEN && job.status !== jobStatus.SELECTED_FREELANCER) {
-            throw new ApiError(400, 'This job is not able to add task');
-        }
-
+    async createTask(job, taskBody) {
         const startDate = new Date(taskBody.startDate);
         const endDate = new Date(taskBody.endDate);
 
@@ -50,22 +37,21 @@ class TaskService {
     }
 
     async getTask(user, taskId) {
-        const task = await Task.findById(taskId);
+        const task = await Task.findById(taskId).populate('job');
 
         if (!task) {
             throw new ApiError(404, 'Task not found');
         }
 
-        const job = await jobService.getJobById(task.job);
 
-        if (!job) {
+        if (!task.job) {
             throw new ApiError(404, 'Job not found');
         }
 
-        if (job.owner.toString() !== user.id) {
+        if (task.job.owner.toString() !== user.id) {
 
             if (!user.roles.includes(roles.ADMIN)) {
-                const offer = await offerService.getOfferByJobAndNeStatus(job.id, offerStatus.PENDING);
+                const offer = await offerService.getOfferByJobAndNeStatus(task.job.id, offerStatus.PENDING);
     
                 if (!offer) {
                     throw new ApiError(403, `Offer not found`);
@@ -78,43 +64,34 @@ class TaskService {
         }
     }
 
-    async getTasksByJob(user, jobId) {
-        const job = await jobService.getJobById(jobId);
-
-        if (!job) {
-            throw new ApiError(404, 'Job not found');
-        }
-
-        if (job.owner.toString() !== user.id) {
-            
-            if (!user.roles.includes(roles.ADMIN)) {
-                const offer = await offerService.getOfferByJobAndNeStatus(job.id, offerStatus.PENDING);
-    
-                if (!offer) {
-                    throw new ApiError(403, `Offer not found`);
-                }
- 
-                if (offer.freelancer.toString() !== user.id) {
-                    throw new ApiError(403, `You don't have permission to access this job's tasks`);
-                }
-            }
-        }
-
+    async getTasksByJob(jobId) {
         return Task.find({ job: jobId });
     }
 
-    async getTaskByJobAndProcess(jobId, process) {
-        return Task.find({ job: jobId, process });
+    async getTasksByJobAndStatus(jobId, status) {
+        return Task.find({ job: jobId, status });
+    }
+
+    async countDeadlinedTaskByJob(jobId) {
+        return Task.count({ job: jobId, status: taskStatus.PROCESSING, endDate: { $lt: Date.now() }});
+    }
+
+    async countTasksByJob(jobId) {
+        return Task.count({ job: jobId });
+    }
+
+    async countTasksByJobAndStatus(jobId, status) {
+        return Task.count({ job: jobId, status });
     }
 
     async doneTask(userId, taskId) {
-        const task = await Task.findById(taskId).lean();
+        const task = await Task.findById(taskId);
 
         if (!task) {
             throw new ApiError(404, 'Task not found');
         }
 
-        const offer = await offerService.getOfferByJobAndNeStatus(task.job, offerStatus.PENDING);
+        const offer = await offerService.getOfferByJobAndStatus(task.job, offerStatus.ACCEPTED);
 
         if (!offer) {
             throw new ApiError(404, 'Offer not found');
@@ -136,79 +113,91 @@ class TaskService {
         );
     }
 
-    async finishTask(userId, taskId) {
-        const task = await Task.findById(taskId).lean();
+    async finishTask(userId, job, taskId) {
+        const task = await Task.findById(taskId);
 
         if (!task) {
             throw new ApiError(404, 'Task not found');
         }
 
-        const job = await jobService.getJobById(task.job);
-
-        if (!job) {
-            throw new ApiError(404, 'Job not found');
+        if (task.job.toString() !== job.id.toString()) {
+            throw new ApiError(400, 'This job does not contain this task');
         }
 
-        if (job.owner.toString() !== userId) {
-           
-            throw new ApiError(400, `You are not the owner of this job`);
-        }
+        const tasksCount = await this.countTasksByJob(task.job);
+        const tasksFinishedCount = await this.countTasksByJobAndStatus(task.job, taskStatus.FINISHED);
 
-        return await Task.findByIdAndUpdate(
-            taskId,
-            {
-                $set: { status: taskStatus.FINISHED }
-            },
-            {
-                new: true,
-                runValidators: true
+        // If finished tasks + this task >= 0.5
+        const threshold = (tasksFinishedCount + 1) / tasksCount;
+        
+        if (threshold >= 0.5 && job.half === false) {
+            job.half = true;
+
+            const employerWallet = await walletService.getWalletByUser(userId);
+
+            if (!employerWallet) {
+                throw new ApiError(404, 'Employer wallet not found');
             }
-        );
+
+            const offer = await offerService.getOfferByJobAndStatus(task.job, offerStatus.ACCEPTED);
+
+            if (!offer) {
+                throw new ApiError(404, 'Offer not found');
+            }
+
+            const mustPay = 0.2 * offer.price;
+
+            if (employerWallet.points < mustPay) {
+                throw new ApiError(400, `To finished this task, your account must have ${mustPay} points`);
+            }
+
+            const adminWallet = await walletService.getAdminWallet();
+
+            if (!adminWallet) {
+                throw new ApiError(404, 'Admin wallet not found');
+            }
+
+            await walletService.handlePoint(employerWallet, mustPay, false);
+            await walletService.handlePoint(adminWallet, mustPay, true);
+
+            await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: userId, point: mustPay });
+            await job.save();
+        }
+
+        task.status = taskStatus.FINISHED;
+        await task.save();
+
+        return task;
     }
 
     async getTaskFinishedsByJob(jobId) {
         return Task.find({ job: jobId, status: taskStatus.FINISHED });
     }
 
-    async timeToAddPoints(taskId) {
-        const task = await Task.findById(taskId).lean();
+    async countTasksByJob(jobId) {
+        return Task.count({ job: jobId });
+    }
 
-        if (!task) {
-            throw new ApiError(404, 'Task not found');
-        }
-
-        const taskFinisheds = await Task.count({job: task.job, status: taskStatus.FINISHED});
-        const totalTasks = await Task.count({ job: task.job });
-
-        const threshold = Math.ceil(totalTasks / 2);
-
-        console.log(taskFinisheds, totalTasks, threshold);
-
-        if (taskFinisheds + 1 > threshold) {
-            return true;
-        }
-
-        return false;
+    async countTaskFinshedByJob(jobId) {
+        return Task.count({ job: jobId, status: taskStatus.FINISHED });
     }
 
     async deleteTask(userId, id) {
-        const task = await Task.findById(id);
+        const task = await Task.findById(id).populate('job');
 
         if (!task) {
             throw new ApiError(404, 'Task not found');
         }
 
-        const job = await jobService.getJobById(task.job);
-
-        if (!job) {
+        if (!task.job) {
             throw new ApiError(404, 'Job not found');
         }
 
-        if (job.owner.toString() !== userId) {
+        if (task.job.owner.toString() !== userId) {
             throw new ApiError(400, 'You are not the onwer of this task');
         }
 
-        if (job.status !== jobStatus.OPEN && job.status !== job.status.SELECTED_FREELANCER) {
+        if (task.job.status !== jobStatus.OPEN && task.job.status !== jobStatus.SELECTED_FREELANCER) {
             throw new ApiError(400, 'This job is not able to delete task');
         }
 

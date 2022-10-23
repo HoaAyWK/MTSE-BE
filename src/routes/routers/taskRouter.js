@@ -47,7 +47,7 @@ router
     )
 
 router
-    .route('/tasks/:id/finish')
+    .route('/tasks/:taskId/finish')
     .put(
         authMiddleware.isAuthenticated,
         authMiddleware.authorizeRoles(roles.EMPLOYER),

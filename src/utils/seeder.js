@@ -11,12 +11,9 @@ const Job = require('../models/job');
 const { connectDatabase } = require('../config/database');
 const { userStatus } = require('../config/userStatus');
 const { roles } = require('../config/roles');
-const { adminId, systemAdminId } = require('../config/constants');
+const { adminEmail, systemAdminEmail } = require('../config/constants');
 
 connectDatabase();
-
-const employerId = new mongoose.Types.ObjectId();
-const freelancerId = new mongoose.Types.ObjectId();
 
 const designCategoryId = new mongoose.Types.ObjectId();
 const developmentCategoryId = new mongoose.Types.ObjectId();
@@ -73,59 +70,6 @@ const categories = [
     }
 ];
 
-const jobs = [
-    {
-        name: 'Demo job 1',
-        description: 'Demo with text .............................................................................',
-        minPrice: 100,
-        maxPrice: 200,
-        category: webDevelopmentCategoryId,
-        owner: employerId,
-        startDate: '10/20/2022',
-        endDate: '12/12/2022'
-    },
-    {
-        name: 'Demo job 2',
-        description: 'Ullamco in consectetur exercitation ad consectetur consectetur deserunt Lorem reprehenderit excepteur do et ad. Ullamco anim aliquip elit adipisicing commodo ea anim amet dolore cillum enim amet dolor ad. Id eiusmod ullamco esse quis cupidatat ipsum in culpa. Officia cupidatat ut ea aute nisi Lorem nostrud commodo ullamco in tempor culpa. Elit aliquip non occaecat ea voluptate ipsum cupidatat anim ipsum minim commodo excepteur commodo.',
-        minPrice: 300,
-        maxPrice: 500,
-        category: webDevelopmentCategoryId,
-        owner: employerId,
-        startDate: '10/25/2022',
-        endDate: '12/12/2022'
-    },
-    {
-        name: 'Demo job 3',
-        description: 'Ullamco tempor culpa proident minim pariatur. Amet dolor sit esse veniam aute irure enim ipsum. Deserunt magna sit adipisicing culpa nisi minim qui incididunt nostrud cillum in. Magna anim Lorem consectetur sunt sint amet pariatur amet voluptate consectetur et elit. Nulla aliqua tempor nulla et minim exercitation elit nulla esse. Amet consectetur aliquip fugiat ut voluptate culpa laborum dolore deserunt occaecat officia aute in deserunt. Quis tempor non aute nostrud incididunt fugiat dolor velit consequat. Quis cillum magna amet magna exercitation fugiat laboris sint magna laborum dolor amet. Non in consectetur labore laboris consequat. Qui nulla elit pariatur commodo sit voluptate sit minim esse. Tempor ex cillum consectetur magna incididunt do ad irure. Irure nulla amet duis ipsum culpa dolor mollit ipsum tempor adipisicing est.',
-        minPrice: 200,
-        maxPrice: 600,
-        category: designUiuxCategoryId,
-        owner: employerId,
-        startDate: '10/25/2022',
-        endDate: '12/12/2022'
-    },
-    {
-        name: 'Demo job 4',
-        description: 'JMagna exercitation ipsum laboris voluptate est aute excepteur officia consequat magna mollit ipsum velit. Dolor amet occaecat duis et officia non deserunt amet eu excepteur magna est est. Labore id exercitation id ad deserunt. Fugiat nostrud ut cillum laboris anim eu enim ad consequat amet nostrud amet amet laborum. Esse ullamco duis ex consequat irure esse.',
-        minPrice: 300,
-        maxPrice: 500,
-        category: designUiuxCategoryId,
-        owner: employerId,
-        startDate: '10/25/2022',
-        endDate: '12/12/2022'
-    },
-    {
-        name: 'Demo job 5',
-        description: 'Incididunt et magna deserunt amet culpa mollit mollit. Enim irure officia nostrud do do magna excepteur velit dolor proident. Deserunt duis est nostrud proident ex dolore fugiat duis velit dolore. Pariatur pariatur ex adipisicing aliquip nostrud do aliquip do laboris nisi consequat. Mollit anim magna voluptate ullamco aliquip labore in excepteur aliquip consectetur. Dolore nisi Lorem ad fugiat commodo consectetur non minim consectetur enim et id consequat.',
-        minPrice: 500,
-        maxPrice: 1000,
-        category: webDevelopmentCategoryId,
-        owner: employerId,
-        startDate: '10/25/2022',
-        endDate: '12/12/2022'
-    }
-];
-
 const seedCredits = async () => {
     try {
         await Credit.deleteMany();
@@ -147,7 +91,6 @@ const seedUsers = async () => {
         console.log('Accounts are deleted');
 
         const employer = {
-            _id: employerId,
             name: 'employer',
             email: 'employer@gmail.com',
             phone: '01238139295',
@@ -166,7 +109,6 @@ const seedUsers = async () => {
         };
 
         const freelancer = {
-            _id: freelancerId,
             name: 'freelancer',
             email: 'freelancer@gmail.com',
             phone: '01238139295',
@@ -181,9 +123,8 @@ const seedUsers = async () => {
         };
 
         const admin = {
-            _id: adminId,
             name: 'admin',
-            email: 'admin@gmail.com',
+            email: adminEmail,
             phone: '0910301031849',
             roles: [
                 roles.ADMIN
@@ -193,9 +134,8 @@ const seedUsers = async () => {
 
 
         const systemAdmin = {
-            _id: systemAdminId,
             name: 'system admin',
-            email: 'sysadmin@gmail.com',
+            email: systemAdminEmail,
             phone: '0213032490',
             roles: [
                 roles.ADMIN
@@ -203,44 +143,112 @@ const seedUsers = async () => {
             status: userStatus.ACTIVE
         }
 
+        await User.deleteMany();
+        console.log("Deleted users");
+
+        const ad = await User.create(admin);
+        const free = await User.create(freelancer);
+        const empl = await User.create(employer);
+        const sysAd = await User.create(systemAdmin);
+
         const systemAdminAccount = {
-            user: systemAdminId,
+            user: sysAd.id,
             password: '123456',
             emailConfirmed: true
         }
 
         const employerAccount = {
-            user: employerId,
+            user: empl.id,
             password: '123456',
             emailConfirmed: true
         }
 
         const freelancerAccount = {
-            user: freelancerId,
+            user: free.id,
             password: '123456',
             emailConfirmed: true
         }
 
         const adminAccount = {
-            user: adminId,
+            user: ad.id,
             password: '123456',
             emailConfirmed: true
         }
+        
+        await Account.deleteMany();
+        console.log("Deleted accounts");
+        await Wallet.deleteMany();
+        console.log("Deleted wallets");
 
-        await User.create(employer);
-        await User.create(admin);
-        await User.create(freelancer);
-        await User.create(systemAdmin);
         await Account.create(employerAccount);
         await Account.create(freelancerAccount);
         await Account.create(adminAccount);
         await Account.create(systemAdminAccount);
-        await Wallet.create({ user: employerId });
-        await Wallet.create({ user: freelancerId });
-        await Wallet.create({ user: adminId });
-        await Wallet.create({ user: systemAdminId });
+        await Wallet.create({ user: empl.id });
+        await Wallet.create({ user: free.id });
+        await Wallet.create({ user: ad.id });
+        await Wallet.create({ user: sysAd.id });
 
         console.log('Created 3 users with 3 accounts, 3 wallets');
+
+        const jobs = [
+            {
+                name: 'Demo job 1',
+                description: 'Demo with text .............................................................................',
+                minPrice: 100,
+                maxPrice: 200,
+                category: webDevelopmentCategoryId,
+                owner: empl.id,
+                startDate: '10/20/2022',
+                endDate: '12/12/2022'
+            },
+            {
+                name: 'Demo job 2',
+                description: 'Ullamco in consectetur exercitation ad consectetur consectetur deserunt Lorem reprehenderit excepteur do et ad. Ullamco anim aliquip elit adipisicing commodo ea anim amet dolore cillum enim amet dolor ad. Id eiusmod ullamco esse quis cupidatat ipsum in culpa. Officia cupidatat ut ea aute nisi Lorem nostrud commodo ullamco in tempor culpa. Elit aliquip non occaecat ea voluptate ipsum cupidatat anim ipsum minim commodo excepteur commodo.',
+                minPrice: 300,
+                maxPrice: 500,
+                category: webDevelopmentCategoryId,
+                owner: empl.id,
+                startDate: '10/25/2022',
+                endDate: '12/12/2022'
+            },
+            {
+                name: 'Demo job 3',
+                description: 'Ullamco tempor culpa proident minim pariatur. Amet dolor sit esse veniam aute irure enim ipsum. Deserunt magna sit adipisicing culpa nisi minim qui incididunt nostrud cillum in. Magna anim Lorem consectetur sunt sint amet pariatur amet voluptate consectetur et elit. Nulla aliqua tempor nulla et minim exercitation elit nulla esse. Amet consectetur aliquip fugiat ut voluptate culpa laborum dolore deserunt occaecat officia aute in deserunt. Quis tempor non aute nostrud incididunt fugiat dolor velit consequat. Quis cillum magna amet magna exercitation fugiat laboris sint magna laborum dolor amet. Non in consectetur labore laboris consequat. Qui nulla elit pariatur commodo sit voluptate sit minim esse. Tempor ex cillum consectetur magna incididunt do ad irure. Irure nulla amet duis ipsum culpa dolor mollit ipsum tempor adipisicing est.',
+                minPrice: 200,
+                maxPrice: 600,
+                category: designUiuxCategoryId,
+                owner: empl.id,
+                startDate: '10/25/2022',
+                endDate: '12/12/2022'
+            },
+            {
+                name: 'Demo job 4',
+                description: 'JMagna exercitation ipsum laboris voluptate est aute excepteur officia consequat magna mollit ipsum velit. Dolor amet occaecat duis et officia non deserunt amet eu excepteur magna est est. Labore id exercitation id ad deserunt. Fugiat nostrud ut cillum laboris anim eu enim ad consequat amet nostrud amet amet laborum. Esse ullamco duis ex consequat irure esse.',
+                minPrice: 300,
+                maxPrice: 500,
+                category: designUiuxCategoryId,
+                owner: empl.id,
+                startDate: '10/25/2022',
+                endDate: '12/12/2022'
+            },
+            {
+                name: 'Demo job 5',
+                description: 'Incididunt et magna deserunt amet culpa mollit mollit. Enim irure officia nostrud do do magna excepteur velit dolor proident. Deserunt duis est nostrud proident ex dolore fugiat duis velit dolore. Pariatur pariatur ex adipisicing aliquip nostrud do aliquip do laboris nisi consequat. Mollit anim magna voluptate ullamco aliquip labore in excepteur aliquip consectetur. Dolore nisi Lorem ad fugiat commodo consectetur non minim consectetur enim et id consequat.',
+                minPrice: 500,
+                maxPrice: 1000,
+                category: webDevelopmentCategoryId,
+                owner: empl.id,
+                startDate: '10/25/2022',
+                endDate: '12/12/2022'
+            }
+        ];
+
+        await Job.deleteMany();
+        console.log("Deleted jobs");
+        await Job.insertMany(jobs);
+        console.log("added jobs");
+
     } catch (error) {
         console.log(error.message);
     }
@@ -258,25 +266,12 @@ const seedCategories = async () => {
     }
 };
 
-const seedJobs = async () => {
-    try {
-        await Job.deleteMany();
-        console.log('Jobs are deleted');
-
-        await Job.insertMany(jobs);
-        console.log('Inserted jobs');
-    } catch (error) {
-        console.log(error.message);
-    }
-};
-
 
 const seedData = async () => {
     try {
         await seedCredits();
         await seedUsers();
         await seedCategories();
-        await seedJobs();
 
         process.exit();
     } catch (error) {

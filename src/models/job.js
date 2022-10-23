@@ -28,6 +28,8 @@ const jobSchema = new mongoose.Schema({
         default: jobStatus.OPEN,
         enum: [
             jobStatus.OPEN,
+            jobStatus.SELECTED_FREELANCER,
+            jobStatus.PENDING_START,
             jobStatus.PROCESSING,
             jobStatus.CLOSED,
             jobStatus.CANCELLED

@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const ApiError = require("../utils/ApiError");
 const { roles } = require('../config/roles');
+const { adminEmail, systemAdminEmail } = require('../config/constants');
 
 class UserService{
     async createUser(user){
@@ -19,6 +20,14 @@ class UserService{
 
     async getUserById(id) {
         return await User.findById(id);
+    }
+
+    async getAdmin() {
+        return await User.findOne({ email: adminEmail}).lean();
+    }
+
+    async getSystemAdmin() {
+        return await User.findOne({ email: systemAdminEmail }).lean();
     }
 
     async queryUsers(filter, options) {

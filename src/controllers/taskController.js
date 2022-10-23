@@ -1,15 +1,12 @@
+const jobService = require('../services/jobService');
 const taskService = require('../services/taskService');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
-const { taskStatus } = require('../config/taskStatus');
-const offerService = require('../services/offerService');
-const walletService = require('../services/walletService');
-const jobService = require('../services/jobService');
 
 class CommentController {
     async createTask(req, res, next) {
         try {
-            const task = await taskService.createTask(req.user.id, req.body);
+            const task = await jobService.createTask(req.user.id, req.body);
 
             res.status(201).json({
                 success: true,
@@ -38,7 +35,7 @@ class CommentController {
 
     async getTasksByJob(req, res, next) {
         try {
-            const tasks = await taskService.getTasksByJob(req.user, req.params.id);
+            const tasks = await taskService.getTasksByJob(req.params.id);
 
             res.status(200).json({
                 success: true,
@@ -62,24 +59,10 @@ class CommentController {
         }
     }
 
-    // Freelancer marks this task as done and waits for Employer mark as finished
+    // Freelancer marks this task as done and waits for Employer marks as finished
     async doneTask(req, res, next) {
         try {
             const task = await taskService.doneTask(req.user.id, req.params.id);
-            
-            const allTasks = await taskService.getTasksByJob(req.user.id, task.jobId)
-            const completedTasks = await taskService.getTaskByJobAndProcess(task.jobId, taskStatus.FINISHED)
-            const job = await jobService.getJobById(task.jobId)
-
-            if (45 < ((completedTasks.lenth/allTasks.length) * 100) < 55 && job.half == false){
-                job.half = true
-                const edittedJob = await jobService.updateHalf(job)
-                /* const offer = await offerService.getOffersByJob(task.jobId)
-
-                const sendMoney = offer.point*0.2
-                const walletFreelancer = await walletService.getWalletByUser(req.user.id)
-                await walletService.handlePoint(walletFreelancer._id, sendMoney, true) */
-            }
 
             res.status(200).json({
                 success: true,
@@ -94,13 +77,7 @@ class CommentController {
     // Employer marks this task as finished
     async finishTask(req, res, next) {
         try {
-            const isTimeToAddPoints = await taskService.timeToAddPoints(req.params.id);
-
-            if (isTimeToAddPoints) {
-                throw new ApiError(400, 'You need to add points')
-            }
-
-            const task = await taskService.finishTask(req.user.id, req.params.id);
+            const task = await jobService.finishTask(req.user.id, req.params.taskId, req.query.jobId);
 
             res.status(200).json({
                 success: true,

@@ -1,6 +1,7 @@
-const Wallet = require('../models/wallet')
-const pointHistoryService = require('./pointHistoryService')
-
+const Wallet = require('../models/wallet');
+const { adminId, systemAdminId } = require('../config/constants');
+const ApiError = require('../utils/ApiError');
+const userService = require('./userService');
 class WalletService{
     async createWallet(wallet){
         const existedWallet = await this.getWalletByUser(wallet.userId)
@@ -23,16 +24,36 @@ class WalletService{
     }
 
     async getWalletByUser(userId){
-        const wallet = await Wallet.findOne({userId})
+        const wallet = await Wallet.findOne({ user: userId })
 
         return wallet
+    }
+
+    async getAdminWallet() {
+        const admin = await userService.getAdmin();
+
+        if (!admin) {
+            throw new ApiError(500, 'Admin not found');
+        }
+
+        return Wallet.findOne({ user: admin._id });
+    }
+
+    async getSystemAdminWalllet() {
+        const systemAdmin = await userService.getSystemAdmin();
+
+        if (!systemAdmin) {
+            throw new ApiError(500, 'System Admin not found');
+        }
+
+        return Wallet.findOne({ user: systemAdmin._id });
     }
 
     async addPoint(walletId, points){
         const wallet = await Wallet.findById(walletId)
 
         if (!wallet){
-            return null
+            throw new ApiError(404, 'Wallet not found');
         }
 
         const newPoint = wallet.points + points
@@ -45,21 +66,14 @@ class WalletService{
     }
 
     async handlePoint(walletId, money, handle){
-        const wallet = await walletSchema.findById(walletId)
-        if (!wallet){
-            return false
+        const wallet = await Wallet.findById(walletId);
+        if (handle === true) {
+            wallet.points = wallet.points + money
         }
-        const newPoints = 0
-        if (handle == true){
-            newPoints = wallet.points + money
+        else {
+            wallet.points = wallet.points - money
         }
-        else{
-            newPoints = wallet.points - money
-        }
-
-        await walletSchema.findByIdAndUpdate(walletId, {points: newPoints})
-
-        return true
+        await wallet.save();
     }
 }
 
