@@ -21,7 +21,7 @@ const appRoute = (app) => {
     app.use('/api/v1', paymentRouter);
     app.use('/api/v1', jobRouter);
     app.use('/api/v1', commentRouter);
-    app.use('/api.v1', transactionRouter)
+    app.use('/api/v1', transactionRouter)
     app.use('/api/v1', taskRouter);
     app.use('/api/v1', pointHisories);
 };
