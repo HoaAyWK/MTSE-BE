@@ -26,7 +26,33 @@ class AuthController {
             const userExist = await userService.getUserByEmail(email);
 
             if (userExist) {
-                throw new ApiError(400, 'Email already in use');
+                const account = await accountService.getAccountByUserId(userExist.id);
+
+                if (!account.emailConfirmed) {
+
+                    account.password = password;
+                    user.name = name;
+                    user.phone = phone;
+                    await account.save();
+                    await userExist.save();
+                    const token = await tokenService.generateVerifyEmailToken(userExist);
+                    const confirmationEmailUrl = `${req.protocol}://${req.get('host')}/api/v1/email/confirm/${token}`;
+                    const message = `Your confirmation email token is as follow:\n\n${confirmationEmailUrl}\n\nIf you have not requested this email, then ignore it.`;
+
+                    await sendEmailService.sendEmail({
+                        email,
+                        subject: 'Confirm Your Email',
+                        message
+                    });
+
+                    return res.status(200).json({
+                        success: true,
+                        message: `Email sent to: ${email}`,
+                        confirmEmailToken: token,
+                    });
+                } else {
+                    throw new ApiError(400, 'Email already in use');
+                }
             }
 
             const user = await userService.createUser({ name, email, phone });
