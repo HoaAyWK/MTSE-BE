@@ -1,3 +1,5 @@
+const cloudinary = require('cloudinary');
+
 const User = require("../models/user");
 const ApiError = require("../utils/ApiError");
 const { roles } = require('../config/roles');
@@ -35,7 +37,7 @@ class UserService{
     }
 
     async updateUser(id, updateBody) {
-        const { email } = updateBody;
+        const { email, avatar } = updateBody;
         const user = await User.findById(id).lean();
 
         if (!user) {
@@ -46,10 +48,25 @@ class UserService{
             throw new ApiError(400, 'Email already taken');
         }
 
+        const updateData = updateBody;
+
+        if (avatar) {
+            if (user.avatar)  {
+                await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+            }
+
+            const result = await cloudinary.v2.uploader.upload(avatar, { folder: 'avatars' });
+
+            updateData.avatar = {
+                public_id: result.public_id,
+                url: result.secure_url
+            };
+        }
+
         return await User.findByIdAndUpdate(
             id,
             {
-                $set: updateBody
+                $set: updateData
             },
             {
                 new: true,
