@@ -23,6 +23,10 @@ const UserSchema = new Schema({
         ],
         default: 'None'
     },
+    avatar: {
+        public_id: String,
+        url: String,
+    },
     phone: {
         type: String,
         required: true
