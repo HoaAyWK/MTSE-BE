@@ -11,7 +11,7 @@ const CategorySchema = new Schema({
     },
     parent: {
         type: Schema.Types.ObjectId,
-        ref: 'categories'
+        ref: 'Category'
     },
     children: {
         type: [{type: Schema.Types.ObjectId, ref: "Category"}],

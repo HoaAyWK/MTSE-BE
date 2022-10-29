@@ -21,6 +21,19 @@ class UserController{
         });
     }
 
+    async getAllUsers(req, res, next) {
+        try {
+            const users = await userService.getUsers(req.user.id);
+
+            res.status(200).json({
+                success: true,
+                users
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getUser(req, res, next) {
         const user = await userService.getUserById(req.params.id);
 

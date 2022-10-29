@@ -3,7 +3,7 @@ const {ResponseCreateCategory, ResponseCategoryById, ResponseEditCategory} = req
 const ApiError = require('../utils/ApiError')
 
 class CategoryController{
-    async addCategory(req, res){
+    async addCategory(req, res, next){
         const response = new ResponseCreateCategory()
         try{
             const category = req.body
@@ -22,8 +22,7 @@ class CategoryController{
             return res.status(500).json(response)
         }
         catch(error){
-            response.messgage = error
-            return res.status(500).json(response)
+            next(error);
         }
     }
 
@@ -46,7 +45,7 @@ class CategoryController{
         }
     }
 
-    async editCategory(req, res){
+    async editCategory(req, res, next){
         const response = new ResponseEditCategory()
         try{
             const id = req.params.id
@@ -69,9 +68,7 @@ class CategoryController{
             return res.status(200).json(response)
         }
         catch(error){
-            response.message = "Error Internal Server"
-
-            return res.status(500).json(response)
+            next(error);
         }
     }
 

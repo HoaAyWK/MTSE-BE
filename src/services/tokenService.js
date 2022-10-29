@@ -6,6 +6,7 @@ const ApiError = require('../utils/ApiError');
 const Token = require('../models/token');
 const { tokenTypes } = require('../config/tokens');
 const userService = require('./userService');
+const { roles } = require('../config/roles') ;
 
 
 class TokenService {
@@ -17,12 +18,13 @@ class TokenService {
      * @param {string} type 
      * @param {string} secret 
      */
-    generateToken(userId, expires, type, secret = process.env.JWT_SECRET) {
+    generateToken(userId, expires, type, isAdmin, secret = process.env.JWT_SECRET) {
         const payload = {
             sub: userId,
             iat: moment().unix(),
             exp: expires.unix(),
-            type
+            type,
+            isAdmin
         };
     
         return jwt.sign(payload, secret);
@@ -73,8 +75,14 @@ class TokenService {
      * @returns {Promise<Token>}
      */
     generateAuthToken(user) {
+        let isAdmin = false;
+
+        if (user.roles.includes(roles.ADMIN)) {
+            isAdmin = true;
+        }
+
         const accessTokenExpires = moment().add(process.env.JWT_ACCESS_EXPIRATION_DAYS, 'days');
-        const accessToken = this.generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
+        const accessToken = this.generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS, isAdmin);
 
         return {
             token: accessToken,
