@@ -13,6 +13,10 @@ class UserService{
         return newUser
     }
 
+    async getUsers(userId) {
+        return User.find({ _id: { $ne: userId }});
+    }
+
     async getUserByEmail(email){
 
         const user = await User.findOne({email})
@@ -37,7 +41,8 @@ class UserService{
     }
 
     async updateUser(id, updateBody) {
-        const { email, avatar } = updateBody;
+
+        const { email } = updateBody;
         const user = await User.findById(id).lean();
 
         if (!user) {
@@ -48,15 +53,22 @@ class UserService{
             throw new ApiError(400, 'Email already taken');
         }
 
-        const updateData = updateBody;
+        const updateData = {
+            name: updateBody.name,
+            email: updateBody.email,
+            phone: updateBody.phone,
+            gender: updateBody.gender,
+            address: updateBody.address,
+            city: updateBody.city,
+            country: updateBody.country
+        };
 
-        if (avatar) {
+        if (updateBody.avatar) {
             if (user.avatar)  {
                 await cloudinary.v2.uploader.destroy(user.avatar.public_id);
             }
-
-            const result = await cloudinary.v2.uploader.upload(avatar, { folder: 'avatars' });
-
+        
+            const result = await cloudinary.v2.uploader.upload(updateBody.avatar, { folder: 'avatars' });
             updateData.avatar = {
                 public_id: result.public_id,
                 url: result.secure_url

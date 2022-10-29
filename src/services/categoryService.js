@@ -54,7 +54,7 @@ class CategoryService{
         }
 
         if (name) {
-            const nameExist = await Category.findOne({ name }).lean();
+            const nameExist = await Category.findOne({ name, _id: { $ne: categoryId } }).lean();
 
             if (nameExist) {
                 throw new ApiError(404, `Category with name: ${name} already exists`);
@@ -126,7 +126,7 @@ class CategoryService{
     }
 
     async getCategories() {
-        return Category.find();
+        return Category.find().populate('parent');
     }
 
     async getCategoryWithChildrenById(id) {

@@ -62,6 +62,14 @@ router
         userController.getUsers);
 
 router
+    .route('/admin/users/all')
+    .get(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.ADMIN),
+        userController.getAllUsers
+    );
+
+router
     .route('/admin/users/:id')
     .get(
         authMiddleware.isAuthenticated,
