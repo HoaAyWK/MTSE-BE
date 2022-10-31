@@ -71,7 +71,7 @@ class UserController{
                 throw new ApiError(404, 'Account not found');
             }
             
-            if (!account.isPasswordMatch(oldPassword)) {
+            if (!(await account.isPasswordMatch(oldPassword))) {
                 throw new ApiError(400, 'Incorrect password');
             }
 

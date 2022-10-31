@@ -30,7 +30,7 @@ class AccountService {
         }
 
         account.password = password;
-        account.save();
+        await account.save();
         
         return account;
     }
