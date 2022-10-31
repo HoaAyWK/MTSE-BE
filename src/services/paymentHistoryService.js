@@ -10,6 +10,10 @@ class PaymentHistoryService {
         return PaymentHistory.paginate(filter, options);
     }
 
+    async getPaymentHistories() {
+        return PaymentHistory.find().populate('user credit');
+    }
+
     async getPaymentHistoriesByUserId(userId) {
         return PaymentHistory.find({ user: userId });
     }

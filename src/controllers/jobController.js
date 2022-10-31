@@ -18,6 +18,20 @@ class JobController {
         }
     }
 
+    async getJobs(req, res, next) {
+        try {
+            const jobs = await jobService.getJobs();
+
+            res.status(200).json({
+                success: true,
+                count: jobs.length,
+                jobs
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getJobsByUser(req, res, next) {
         try {
             const filter = pick(req.query, ['name', 'status']);

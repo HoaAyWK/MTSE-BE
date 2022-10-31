@@ -33,6 +33,14 @@ router
     );
 
 router
+    .route('/admin/payments/all')
+    .get(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.ADMIN),
+        paymentHistoryController.getPaymentHistories
+    );
+
+router
     .route('/admin/payments/user/:id')
     .get(
         authMiddleware.isAuthenticated,

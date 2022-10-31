@@ -14,6 +14,12 @@ class JobService {
         return Job.paginate(filter, options);
     }
 
+    async getJobs() {
+        return Job.find()
+            .populate({ path: 'owner', select: 'id name avatar'})
+            .populate({ path: 'category', select: 'id name' });
+    }
+
     async getJobById(id) {
         return Job.findById(id);
     }

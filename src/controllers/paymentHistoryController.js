@@ -18,6 +18,20 @@ class PaymentHistoryController {
         }
     }
 
+    async getPaymentHistories(req, res, next) {
+        try {
+            const paymentHistories = await paymentHistoryService.getPaymentHistories();
+
+            res.status(200).json({
+                success: true,
+                count: paymentHistories.length,
+                paymentHistories
+            });
+        } catch(error) {
+            next(error);
+        }
+    }
+
     async getPaymentHistory(req, res, next) {
         try {
             const paymentHistory = await paymentHistoryService.getPaymentHistoryById(req.params.id);

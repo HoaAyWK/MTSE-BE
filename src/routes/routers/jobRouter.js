@@ -123,6 +123,15 @@ router
         jobController.reportUser
     );
 
+
+router
+    .route('/admin/jobs')
+    .get(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.ADMIN),
+        jobController.getJobs
+    );
+
 router
     .route('/admin/jobs/:id')
     .delete(
