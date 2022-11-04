@@ -26,6 +26,28 @@ class JobMiddleware {
         }
     }
 
+    async requestWithJobFromQuery(req, res, next) {
+        try {
+            const jobId = req.query.jobId;
+
+            if (!jobId) {
+                throw new ApiError(400, 'jobId query is required');
+            }
+
+            const job = await jobService.getJobById(jobId);
+
+            if (!job) {
+                throw new ApiError(404, 'Job not found');
+            }
+
+            req.job = job;
+
+            next();
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async isJobOwner(req, res, next) {
         try {
             if (req.job.owner.toString() !== req.user.id) {

@@ -13,6 +13,10 @@ class UserService{
         return newUser
     }
 
+    async getTotalUsers() {
+        return User.count();
+    }
+
     async getUsers(userId) {
         return User.find({ _id: { $ne: userId }});
     }
@@ -60,7 +64,12 @@ class UserService{
             gender: updateBody.gender,
             address: updateBody.address,
             city: updateBody.city,
-            country: updateBody.country
+            country: updateBody.country,
+            introduction: updateBody.introduction,
+            experience: updateBody.experience,
+            company: updateBody.company,
+            companyName: updateBody.companyName,
+            identityNumber: updateBody.identityNumber
         };
 
         if (updateBody.avatar) {

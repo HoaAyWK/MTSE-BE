@@ -8,6 +8,7 @@ const pointHistoryService = require('./pointHistoryService');
 const taskService = require('./taskService');
 const commentService = require('./commentService');
 const userService = require('./userService');
+const { getMonth } = require('../utils/getMonth');
 
 class JobService {
     async queryJobs(filter, options) {
@@ -16,7 +17,7 @@ class JobService {
 
     async getJobs() {
         return Job.find()
-            .populate({ path: 'owner', select: 'id name avatar'})
+            .populate({ path: 'owner', select: 'id name avatar email'})
             .populate({ path: 'category', select: 'id name' });
     }
 
@@ -89,45 +90,22 @@ class JobService {
         return await offerService.getOffersByJob(jobId);
     }
 
-    async selectOffer(userId, jobId, offerId) {
-        const wallet = await walletService.getWalletByUser(userId);
-
-        if (!wallet) {
-            throw new ApiError(404, 'Wallet not found');
-        }
-
-        const isSelected = await offerService.getOfferByJobAndNeStatus(jobId, offerStatus.PENDING);
-
-        if (isSelected) {
-            throw new ApiError(400, 'This job already select freelancer');
-        }
-
-        const offer = await offerService.getOfferById(offerId);
-
-        if (!offer) {
-            throw new ApiError(404, "Offer not found");
-        }
-
+    async selectOffer(offer, wallet, job) {
         const threshold = offer.price * 0.3;
 
         if (wallet.points < threshold) {
             throw new ApiError(400, `This offer requires ${threshold} to select`);
         }
 
-        await Job.findByIdAndUpdate(jobId, { $set: { status: jobStatus.SELECTED_FREELANCER, startDate: Date.now() }});
+        await Job.findByIdAndUpdate(job.id, { $set: { status: jobStatus.SELECTED_FREELANCER, startDate: Date.now() }});
         offer.status = offerStatus.SELECTED;
         await offer.save();
         
         return offer;
     }
 
-    async pendingFreelancerStart(userId, jobId) {
-        const job = await Job.findById(jobId);
-
-        if (job.owner.toString() !== userId) {
-            throw new ApiError(400, 'You are not the owner of this job');
-        }
-
+    async pendingFreelancerStart(job) {
+        console.log(job);
         if (job.status !== jobStatus.SELECTED_FREELANCER) {
             throw new ApiError(400, 'Can not pending start this job');
         }
@@ -139,17 +117,7 @@ class JobService {
     }
 
     // Freelancer accepts all the job's tasks and start to do the job
-    async startJob(userId, offerId) {
-        const offer = await offerService.getOfferById(offerId);
-
-        if (!offer) {
-            throw new ApiError(404, 'Offer not found');
-        }
-
-        if (offer.freelancer.toString() !== userId) {
-            throw new ApiError(400, 'You do not have permission to start this job');
-        }
-
+    async startJob(userId, offer) {
         const job = await Job.findById(offer.job); 
 
         if (!job) {
@@ -184,12 +152,14 @@ class JobService {
             throw new ApiError(404, 'Admin wallet not found');
         }
 
+        const month = getMonth();
+
         await walletService.handlePoint(freelancerWallet, palmMoney, false);
         await walletService.handlePoint(employerWallet, palmMoney, false);
         await walletService.handlePoint(adminWallet, palmMoney * 2, true);
 
-        await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: userId, point: palmMoney});
-        await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: job.owner, point: palmMoney});
+        await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: userId, month, point: palmMoney});
+        await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: job.owner, month, point: palmMoney});
         
         job.status = jobStatus.PROCESSING;
         await job.save();
@@ -197,29 +167,19 @@ class JobService {
         return job;
     }
 
-    async doneJob(userId, jobId) {
-        const job = await Job.findById(jobId);
-
-        if (!job) {
-            throw new ApiError(404, 'Job not found');
+    async doneJob(userId, job) {
+        if (job.status !== jobStatus.PROCESSING) {
+            throw new ApiError(400, `Can not done this job! Only job with status "Processing" can mark as done.`);
         }
 
-        if (job.owner.toString() !== userId) {
-            throw new ApiError(400, 'You are not the owner of this job');
-        }
-
-        if (job.status === jobStatus.CLOSED || job.status === jobStatus.CANCELLED) {
-            throw new ApiError(400, 'This job already closed');
-        }
-
-        const tasksCount = await taskService.countTasksByJob(jobId);
-        const taskFinishedCount = await taskService.countTaskFinshedByJob(jobId);
+        const tasksCount = await taskService.countTasksByJob(job.id);
+        const taskFinishedCount = await taskService.countTaskFinshedByJob(job.id);
 
         if (tasksCount !== taskFinishedCount) {
             throw new ApiError(400, 'All Tasks Not Completed yet');
         }
 
-        const offer = await offerService.getOfferByJobAndStatus(jobId, offerStatus.ACCEPTED);
+        const offer = await offerService.getOfferByJobAndStatus(job.id, offerStatus.ACCEPTED);
 
         if (!offer) {
             throw new ApiError(404, 'Offer not found');
@@ -257,6 +217,8 @@ class JobService {
             throw new ApiError(404, 'SystemAdmin wallet not found');
         }
 
+        const month = getMonth();
+
         // Employer send 50% left to finish the job
         await walletService.handlePoint(employerWallet.id, employerMustPay, false);
 
@@ -270,13 +232,13 @@ class JobService {
         await walletService.handlePoint(systemAdminWallet.id, 0.1 * offer.price, true);
 
         // Save point histories
-        await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: job.owner, point: employerMustPay });
-        await pointHistoryService.createPointHistory({ wallet: freelancerWallet.id, sender: adminWallet.user, point: 0.9 * offer.price });
-        await pointHistoryService.createPointHistory({ wallet: freelancerWallet.id, sender: adminWallet.user, point: 0.3 * offer.price });
-        await pointHistoryService.createPointHistory({ wallet: systemAdminWallet.id, sender: job.owner, point: 0.1 * offer.price });
+        await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: job.owner, month, point: employerMustPay });
+        await pointHistoryService.createPointHistory({ wallet: freelancerWallet.id, sender: adminWallet.user, month, point: 0.9 * offer.price });
+        await pointHistoryService.createPointHistory({ wallet: freelancerWallet.id, sender: adminWallet.user, month, point: 0.3 * offer.price });
+        await pointHistoryService.createPointHistory({ wallet: systemAdminWallet.id, sender: job.owner, month, point: 0.1 * offer.price });
 
-        await commentService.createComment({ user: offer.freelancer, job: jobId, creator: userId });
-        await commentService.createComment({ user: userId, job: jobId, creator: offer.freelancer });
+        await commentService.createComment({ user: offer.freelancer, job: job.id, creator: userId });
+        await commentService.createComment({ user: userId, job: job.id, creator: offer.freelancer });
 
         job.status = jobStatus.CLOSED;
         await job.save();
@@ -335,15 +297,17 @@ class JobService {
                 throw new ApiError(404, 'Admin wallet not found');
             }
 
+            const month = getMonth();
+
             await walletService.handlePoint(adminWallet, (freelancerCompensation + employerCompensation) * offer.price, false);
             await walletService.handlePoint(freelancerWallet, freelancerCompensation * offer.price, true);
             await walletService.handlePoint(employerWallet, employerCompensation * offer.price, true);
 
             await pointHistoryService
-                .createPointHistory({ wallet: freelancerWallet.id, sender: adminWallet.user, point: freelancerCompensation * offer.price });
+                .createPointHistory({ wallet: freelancerWallet.id, sender: adminWallet.user, month, point: freelancerCompensation * offer.price });
             
             await pointHistoryService
-                .createPointHistory({ wallet: employerWallet.id, sender: adminWallet.user, price: employerCompensation * offer.price });
+                .createPointHistory({ wallet: employerWallet.id, sender: adminWallet.user, month, price: employerCompensation * offer.price });
 
             job.status = jobStatus.CANCELLED;
             await job.save();

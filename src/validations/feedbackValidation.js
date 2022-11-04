@@ -1,12 +1,12 @@
 const Joi = require('joi');
 
-const starAndWriteComment = {
+const createFeedback = {
     body: Joi.object().keys({
-        stars: Joi.number().required().min(1).max(5),
+        name: Joi.string().required(),
         content: Joi.string().required()
     })
 };
 
 module.exports = {
-    starAndWriteComment
+    createFeedback
 }

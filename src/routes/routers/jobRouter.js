@@ -6,6 +6,9 @@ const authMiddleware = require('../../middlewares/auth');
 const ownerMiddleware = require('../../middlewares/owner');
 const { jobValidation, offerValidation } = require('../../validations');
 const validate = require('../../middlewares/validate');
+const offerMiddleware = require('../../middlewares/offer');
+const walletMiddleware = require('../../middlewares/wallet');
+const jobMiddleware = require('../../middlewares/job');
 
 const router = Router();
 
@@ -83,6 +86,10 @@ router
     .put(
         authMiddleware.isAuthenticated,
         authMiddleware.authorizeRoles(roles.EMPLOYER),
+        walletMiddleware.requestWithWalletFromUser,
+        offerMiddleware.isOfferSelected,
+        offerMiddleware.requestWithOfferFromParams,
+        jobMiddleware.requestWithJobFromQuery,
         jobController.selectOffer
     )
     .delete(
@@ -97,6 +104,8 @@ router
     .put(
         authMiddleware.isAuthenticated,
         authMiddleware.authorizeRoles(roles.EMPLOYER),
+        jobMiddleware.requestWithJobFromParams,
+        jobMiddleware.isJobOwner,
         jobController.pendingFreelancerStart
     );
 
@@ -104,6 +113,8 @@ router
     .route('/jobs/:id/start')
     .put(
         authMiddleware.isAuthenticated,
+        offerMiddleware.requestWithOfferFromQuery,
+        offerMiddleware.isOfferFreelancer,
         jobController.startJob
     );
 
@@ -112,6 +123,8 @@ router
     .put(
         authMiddleware.isAuthenticated,
         authMiddleware.authorizeRoles(roles.EMPLOYER),
+        jobMiddleware.requestWithJobFromParams,
+        jobMiddleware.isJobOwner,
         jobController.doneJob
     );
 
