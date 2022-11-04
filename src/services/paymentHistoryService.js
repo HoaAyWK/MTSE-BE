@@ -11,7 +11,7 @@ class PaymentHistoryService {
     }
 
     async getPaymentHistories() {
-        return PaymentHistory.find().populate('user credit');
+        return PaymentHistory.find().populate('user credit').sort({ createdAt: 'desc'});
     }
 
     async getPaymentHistoriesByUserId(userId) {

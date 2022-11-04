@@ -43,9 +43,15 @@ const UserSchema = new Schema({
     country: {
         type: String
     },
-    stars: {
-        type: Number,
-        default: 0
+    rating: {
+        stars: {
+            type: Number,
+            default: 0
+        },
+        numOfRating: {
+            type: Number,
+            default: 0
+        }
     },
     status: {
         type: String,

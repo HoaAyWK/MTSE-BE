@@ -16,7 +16,7 @@ class OfferService {
     }
 
     async getOffersByJob(jobId) {
-        return Offer.find({ job: jobId });
+        return Offer.find({ job: jobId }).populate({ path: 'freelancer', select: 'id name avatar email rating'});
     }
 
     async getOffersByFreelancer(freelancerId) {

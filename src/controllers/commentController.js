@@ -6,7 +6,7 @@ class CommentController {
     async queryComments(req, res, next) {
         try {
             const filter = pick(req.query, ['content', 'stars', 'user', 'creator', 'isCommented']);
-            const options = pick(req.query, ['sortBy', 'limit', 'page']);
+            const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
 
             const result = await commentService.queryComments(filter, options);
 

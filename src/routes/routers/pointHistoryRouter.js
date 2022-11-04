@@ -16,4 +16,8 @@ router.route('/pointhistories/comission')
         pointHistoryController.getComission
     );
 
+router
+    .route('/pointhistories/statistic')
+    .get(pointHistoryController.getStatistic);
+
 module.exports = router;

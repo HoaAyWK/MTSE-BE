@@ -13,7 +13,11 @@ const PointHistorySchema = new Schema({
     point: {
         type: Number,
         required: true
-    }, 
+    },
+    month: {
+        type: String,
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now()
