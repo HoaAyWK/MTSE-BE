@@ -8,6 +8,7 @@ const Wallet = require('../models/wallet');
 const Credit = require('../models/credit');
 const Category = require('../models/category');
 const Job = require('../models/job');
+const PointHistory = require('../models/pointHistory');
 const { connectDatabase } = require('../config/database');
 const { userStatus } = require('../config/userStatus');
 const { roles } = require('../config/roles');
@@ -174,6 +175,8 @@ const seedUsers = async () => {
             password: '123456',
             emailConfirmed: true
         }
+
+        
         
         await Account.deleteMany();
         console.log("Deleted accounts");
@@ -187,7 +190,10 @@ const seedUsers = async () => {
         await Wallet.create({ user: empl.id });
         await Wallet.create({ user: free.id });
         await Wallet.create({ user: ad.id });
-        await Wallet.create({ user: sysAd.id });
+        const systemAdminWallet = await Wallet.create({ user: sysAd.id });
+
+        await PointHistory.create({ wallet: systemAdminWallet.id, sender: empl.id, point: 40, month: 'November' });
+        await PointHistory.create({ wallet: systemAdminWallet.id, sender: empl.id, point: 50, month: 'November' });
 
         console.log('Created 3 users with 3 accounts, 3 wallets');
 
