@@ -46,32 +46,14 @@ class UserService{
 
     async updateUser(id, updateBody) {
 
-        const { email } = updateBody;
         const user = await User.findById(id).lean();
 
         if (!user) {
             throw new ApiError(404, 'User not found');
         }
 
-        if (email && (await User.isEmailTaken(email, id))) {
-            throw new ApiError(400, 'Email already taken');
-        }
 
-        const updateData = {
-            name: updateBody.name,
-            email: updateBody.email,
-            phone: updateBody.phone,
-            gender: updateBody.gender,
-            address: updateBody.address,
-            city: updateBody.city,
-            country: updateBody.country,
-            introduction: updateBody.introduction,
-            experience: updateBody.experience,
-            company: updateBody.company,
-            companyName: updateBody.companyName,
-            identityNumber: updateBody.identityNumber
-        };
-
+        const updateData = updateBody;
         if (updateBody.avatar) {
             if (user.avatar)  {
                 await cloudinary.v2.uploader.destroy(user.avatar.public_id);

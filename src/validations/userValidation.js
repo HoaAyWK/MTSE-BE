@@ -14,6 +14,22 @@ const promoteToEmployer = {
     })
 };
 
+const updateUser = {
+    body: Joi.object().keys({
+        name: Joi.string(),
+        phone: Joi.string(),
+        gender: Joi.string(),
+        address: Joi.string(),
+        city: Joi.string(),
+        country: Joi.string(),
+        identityNumber: Joi.string(),
+        introduction: Joi.string(),
+        experience: Joi.string(),
+        company: Joi.string(),
+        companyRole: Joi.string()
+    })
+};
+
 const changePassword = {
     body: Joi.object().keys({
         oldPassword: Joi.string().required(),
@@ -23,5 +39,6 @@ const changePassword = {
 
 module.exports = {
     promoteToEmployer,
-    changePassword
+    changePassword,
+    updateUser
 };
