@@ -2,6 +2,7 @@ const ApiError = require('../utils/ApiError');
 const accountService = require('./accountService');
 const userService = require('./userService');
 const tokenService = require('./tokenService');
+const walletService = require('./walletService');
 const { tokenTypes } = require('../config/tokens');
 const { userStatus } = require('../config/userStatus');
 
@@ -18,7 +19,7 @@ class AuthService {
             throw new ApiError(400, 'Account not found');
         }
 
-        if (!user || !(await account.isPasswordMatch(password))) {
+        if (!(await account.isPasswordMatch(password))) {
             throw new ApiError(400, 'Incorrect Email or Password');
         }
 
@@ -35,6 +36,38 @@ class AuthService {
         }
 
         return user;
+    }
+
+    async register(email, name, phone, password) {
+        const existingUser = await userService.getUserByEmail(email);
+
+        if (existingUser) {
+            const existingAccount = await accountService.getAccountByUserId(existingUser.id);
+
+            if (!existingAccount) {
+                throw new ApiError(404, 'Account not found');
+            }
+
+            if (!existingAccount.emailConfirmed) {
+                existingAccount.password = password;
+                existingUser.name = name;
+                existingUser.phone = phone;
+
+                await existingAccount.save();
+                await existingUser.save();
+
+                return await tokenService.generateVerifyEmailToken(existingUser);
+            }
+
+            throw new ApiError(400, 'Email already in use');
+        }
+
+        const user = await userService.createUser({ name, email, phone });
+
+        await walletService.createWallet({user: user.id});
+        await accountService.create({ user: user.id, password });
+
+        return await tokenService.generateVerifyEmailToken(user);
     }
 
     async resetPassword(resetPasswordToken, password, confirmPassword) {

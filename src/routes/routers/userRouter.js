@@ -15,6 +15,7 @@ router
         userController.getUserProfile)
     .put(
         authMiddleware.isAuthenticated,
+        validate(userValidation.updateUser),
         userController.updateProfile
     )
     .delete(

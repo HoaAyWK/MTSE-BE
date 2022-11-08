@@ -25,8 +25,13 @@ class JobService {
         return Job.findById(id);
     }
 
-    async createJob(jobBody) {
-        return Job.create(jobBody);
+    async createJob(jobData) {
+        
+        if (jobData.maxPrice < jobData.minPrice) {
+            throw new ApiError(400, 'MaxPrice must be lagger than MinPrice');
+        }
+        
+        return Job.create(jobData);
     }
 
     async countJobsByCategory(categoryId) {

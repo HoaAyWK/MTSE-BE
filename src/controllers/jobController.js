@@ -106,11 +106,6 @@ class JobController {
     async createJob(req, res, next) {
         try {
             const jobData = req.body;
-
-            if (jobData.maxPrice < jobData.minPrice) {
-                throw new ApiError(400, 'MaxPrice must be lagger than MinPrice');
-            }
-
             jobData.owner = req.user.id;
 
             const job = await jobService.createJob(jobData);
