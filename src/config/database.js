@@ -11,4 +11,13 @@ const connectDatabase = async () => {
     }
 };
 
-module.exports = { connectDatabase };
+const connectForTest = () => {
+    mongoose.Promise = Promise;
+    mongoose.connect(process.env.MONGODB_URL);
+};
+
+const disconnectForTest = (done) => {
+    mongoose.disconnect(done);
+};
+
+module.exports = { connectDatabase, connectForTest, disconnectForTest };
