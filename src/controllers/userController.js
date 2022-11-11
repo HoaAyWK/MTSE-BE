@@ -3,6 +3,9 @@ const userService = require('../services/userService');
 const accountService = require('../services/accountService');
 const pick = require('../utils/pick');
 const { userStatus } = require('../config/userStatus');
+const jobService = require('../services/jobService');
+const offerService = require('../services/offerService');
+const { offerStatus } = require('../config/offerStatus');
 
 
 class UserController{
@@ -145,7 +148,11 @@ class UserController{
 
     async deleteMyAccount(req, res, next) {
         try {
-            const user = await userService.changeUserStatus(req.user.id, userStatus.DELETED);
+            const userId = req.user.id;
+            const user = await userService.changeUserStatus(userId, userStatus.DELETED);
+            
+            await offerService.updateOfferStatusByUser(userId, offerStatus.CANCELLED);
+            await jobService.updateJobsStatusByUser(userId, jobService.CANCELLED);
 
             res.status(200).json({
                 success: true,

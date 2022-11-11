@@ -7,7 +7,6 @@ const { offerStatus } = require('../config/offerStatus');
 const pointHistoryService = require('./pointHistoryService');
 const taskService = require('./taskService');
 const commentService = require('./commentService');
-const userService = require('./userService');
 const { getMonth } = require('../utils/getMonth');
 
 class JobService {
@@ -36,6 +35,10 @@ class JobService {
 
     async countJobsByCategory(categoryId) {
         return Job.count({ category: categoryId });
+    }
+
+    async updateJobsStatusByUser(user, status) {
+        return Job.updateMany({ owner: user, status: jobStatus.OPEN }, { $set: { status }});
     }
 
     async deleteJob(id) {

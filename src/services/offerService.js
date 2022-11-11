@@ -68,6 +68,10 @@ class OfferService {
         offer.status = offerStatus.ACCEPTED;
         await offer.save();
     }
+
+    async updateOfferStatusByUser(user, status) {
+        return Offer.updateMany({ freelancer: user, status: offerStatus.PENDING }, { $set: { status }});
+    }
 }
 
 module.exports = new OfferService;

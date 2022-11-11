@@ -10,7 +10,7 @@ class AuthService {
     async login(email, password) {
         const user = await userService.getUserByEmail(email);
         if (!user) {
-            throw new ApiError(400, 'User not found');
+            throw new ApiError(400, 'Incorrect Email or Password');
         }
 
         const account = await accountService.getAccountByUserId(user.id);
@@ -24,7 +24,7 @@ class AuthService {
         }
 
         if (!account.emailConfirmed) {
-            throw new ApiError(401, 'Your email is not verified. Please verify your email!')
+            throw new ApiError(401, 'Your email is not verified. Please, verify your email!')
         }
 
         if (user.status === userStatus.BANNED) {
