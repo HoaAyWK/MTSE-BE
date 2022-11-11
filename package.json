@@ -7,13 +7,16 @@
     "start": "nodemon src/server.js",
     "dev": "SET NODE_ENV=DEVELOPMENT& nodemon src/server",
     "prod": "SET NODE_ENV=PRODUCTION& nodemon src/server",
-    "seeder": "node src/utils/seeder.js"
+    "seeder": "node src/utils/seeder.js",
+    "test": "mocha --timeout 10000 ./test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "chai": "^4.3.7",
+    "chai-http": "^4.3.0",
     "cloudinary": "^1.32.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -23,6 +26,7 @@
     "express-fileupload": "^1.4.0",
     "joi": "^17.6.3",
     "jsonwebtoken": "^8.5.1",
+    "mocha": "^10.1.0",
     "moment": "^2.29.4",
     "mongoose": "^6.6.5",
     "nodemailer": "^6.8.0",
