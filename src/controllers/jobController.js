@@ -205,7 +205,7 @@ class JobController {
 
     async selectOffer(req, res, next) {
         try {
-            const offer = await jobService.selectOffer(req.offer, req.wallet, req.job);
+            const offer = await jobService.selectOffer(req.params.id, req.user.id, req.query.jobId);
 
             res.status(200).json({
                 success: true,
@@ -218,7 +218,7 @@ class JobController {
 
     async pendingFreelancerStart(req, res, next) {
         try {
-            const job = await jobService.pendingFreelancerStart(req.job);
+            const job = await jobService.pendingFreelancerStart(req.params.id, req.user.id);
 
             res.status(200).json({
                 success: true,
@@ -231,7 +231,7 @@ class JobController {
 
     async startJob(req, res, next) {
         try {
-            const job = await jobService.startJob(req.user.id, req.offer);
+            const job = await jobService.startJob(req.user.id, req.params.id);
 
             res.status(200).json({
                 success: true,
@@ -245,7 +245,7 @@ class JobController {
 
     async doneJob(req, res, next){
         try {
-            const job = await jobService.doneJob(req.user.id, req.job);
+            const job = await jobService.doneJob(req.user.id, req.params.id);
 
             res.status(200).json({
                 success: true,
