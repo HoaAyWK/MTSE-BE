@@ -34,6 +34,10 @@ router
     );
 
 router
+    .route('/categories/intro/:limit')
+    .get(categoryController.getCategoriesIntro)
+
+router
     .route('/categories')
     .get(categoryController.getCategoriesNoParentWithChildren);
 
@@ -42,6 +46,8 @@ router
     .get(categoryController.getCategoryWithChildren);
 
 router.put('/:id', categoryController.editCategory)
+
+
 
 module.exports = router
 

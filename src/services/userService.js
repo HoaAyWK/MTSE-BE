@@ -110,6 +110,20 @@ class UserService{
 
         return await User.findByIdAndUpdate(id, { $set: promoteBody }, { new: true, runValidators: true });
     }
+
+
+    async getNumOfCompanies(){
+        const users = await User.find({})
+        var count = 0
+        users.forEach((user) => {
+            if (user.roles.includes('employer')){
+                count += 1
+            }
+        })
+
+        return count
+    }
+
 }
 
 module.exports = new UserService 

@@ -1,6 +1,8 @@
 const categoryService = require('../services/categoryService')
 const {ResponseCreateCategory, ResponseCategoryById, ResponseEditCategory} = require("../DTOs/categoryDTO")
 const ApiError = require('../utils/ApiError')
+const jobService = require('../services/jobService')
+const { jobStatus } = require('../config/jobStatus')
 
 class CategoryController{
     async addCategory(req, res, next){
@@ -130,6 +132,23 @@ class CategoryController{
             next(error);
         }
     }
+
+    async getCategoriesIntro(req, res){
+        const introCategories = await categoryService.getCategoriesIntro(req.params.limit)
+        var categories = []
+        for (var i = 0; i < introCategories.length; i++){
+            var numJobs = 0
+            var temp = await jobService.getNumJobsByCategoryAndSatus(introCategories[i].id, jobStatus.OPEN)
+            numJobs += temp
+            for (var j = 0; j<introCategories[i].children.length; j++){
+                temp = await jobService.getNumJobsByCategoryAndSatus(introCategories[i].children[j] , jobStatus.OPEN)
+                numJobs += temp
+            }
+            categories.push({category: introCategories[i], numJobs})
+        }
+        return res.json(categories)
+    }
+
 }
 
 module.exports = new CategoryController

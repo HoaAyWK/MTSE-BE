@@ -1,6 +1,9 @@
 const ApiError = require('../utils/ApiError');
 const jobService = require('../services/jobService');
+const userService = require('../services/userService')
 const pick = require('../utils/pick');
+const Job = require('../models/job');
+const categoryService = require('../services/categoryService');
 
 class JobController {
     async queryJobs(req, res, next) {
@@ -269,6 +272,26 @@ class JobController {
         catch(error){
             next(error);
         }
+    }
+
+    async getInfoIntro(req, res){
+        const countJobs = await jobService.getIntro()
+        const numCompanies = await userService.getNumOfCompanies()
+        return res.json({
+            numJobs: countJobs,
+            numCompanies
+        })
+    }
+
+    async getNewestJobs(req, res){
+        const {num, status} = req.query
+        const jobs = await jobService.getNewestJobs(num, status)
+        var categories = []
+        for (var i = 0; i<jobs.length; i++){
+            var category = await categoryService.getCategoryById(jobs[i].category)
+            categories.push(category)
+        }
+        return res.json({jobs, categories})
     }
 }
 

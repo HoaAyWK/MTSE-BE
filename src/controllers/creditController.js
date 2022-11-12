@@ -4,7 +4,11 @@ const creditService = require('../services/creditService');
 class CreditController {
     async getCredits(req, res, next) {
         try {
-            const credits = await creditService.getCredits();
+            const num = req.query.num
+            if(num == null){
+                num = 3
+            }
+            const credits = await creditService.getCredits(num);
 
             res.status(200).json({
                 success: true,
