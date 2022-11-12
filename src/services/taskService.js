@@ -7,11 +7,26 @@ const { roles } = require('../config/roles');
 const { taskStatus } = require('../config/taskStatus');
 const walletService = require('./walletService');
 const pointHistoryService = require('./pointHistoryService');
+const { getMonth } = require('../utils/getMonth');
 
 class TaskService {
-    async createTask(job, taskBody) {
+    async createTask(userId, taskBody) {
         const startDate = new Date(taskBody.startDate);
         const endDate = new Date(taskBody.endDate);
+
+        const job = await jobService.getJobById(taskBody.job);
+
+        if (!job) {
+            throw new ApiError(404, 'Job not found');
+        }
+
+        if (job.owner !== userId) {
+            throw new ApiError(400, 'You are not the owner of this job');
+        }
+
+        if (job.status !== jobStatus.OPEN && job.status !== jobStatus.SELECTED_FREELANCER) {
+            throw new ApiError(400, 'This job is not able to add task');
+        }
 
         if (startDate < job.startDate) {
             throw new ApiError(400, 'Task start date must be lagger than or equal job start date');
@@ -114,6 +129,7 @@ class TaskService {
     }
 
     async finishTask(userId, job, taskId) {
+        console.log(taskId);
         const task = await Task.findById(taskId);
 
         if (!task) {
@@ -160,7 +176,9 @@ class TaskService {
             await walletService.handlePoint(employerWallet, mustPay, false);
             await walletService.handlePoint(adminWallet, mustPay, true);
 
-            await pointHistoryService.createPointHistory({ wallet: adminWallet.id, sender: userId, point: mustPay });
+
+            const month = getMonth();
+            await pointHistoryService.createPointHistory({ wallet: adminWallet.id, month, sender: userId, point: mustPay });
             await job.save();
         }
 
