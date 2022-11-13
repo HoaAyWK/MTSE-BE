@@ -68,6 +68,12 @@ const categories = [
         _id: designUiuxCategoryId,
         name: 'Design UI/UX',
         parent: designCategoryId
+    },
+    {
+        name: 'Website'
+    },
+    {
+        name: 'Mobile'
     }
 ];
 
@@ -199,8 +205,8 @@ const seedUsers = async () => {
 
         const jobs = [
             {
-                name: 'Demo job 1',
-                description: 'Demo with text .............................................................................',
+                name: 'Aliqua enim cillum velit consectetur nostrud incididunt.',
+                description: 'Demo with text ',
                 minPrice: 100,
                 maxPrice: 200,
                 category: webDevelopmentCategoryId,

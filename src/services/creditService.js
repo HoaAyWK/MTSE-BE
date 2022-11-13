@@ -7,8 +7,14 @@ class CreditService {
     }
 
     async getCredits(num) {
-        const credits = await Credit.find()
-        return credits.slice(0, num);
+        let credits = [];
+        if (num) {
+            credits = await Credit.find().limit(num);
+        } else {
+            credits = await Credit.find();
+        }
+       
+        return credits;
     }
 
     async getCreditById(id) {
