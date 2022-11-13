@@ -17,3 +17,5 @@ connectDatabase();
 app.listen(PORT, () => 
     console.log(`http://localhost:${PORT}`)
 );
+
+module.exports = app

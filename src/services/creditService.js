@@ -6,8 +6,9 @@ class CreditService {
         return Credit.create(creditBody);
     }
 
-    async getCredits() {
-        return Credit.find();
+    async getCredits(num) {
+        const credits = await Credit.find()
+        return credits.slice(0, num);
     }
 
     async getCreditById(id) {

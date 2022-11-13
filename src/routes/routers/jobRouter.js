@@ -10,6 +10,12 @@ const offerMiddleware = require('../../middlewares/offer');
 const router = Router();
 
 router
+    .route('/jobs/newest')
+    .get(
+        jobController.getNewestJobs
+    )
+
+router
     .route('/jobs')
     .get(jobController.queryJobs);
 
@@ -125,6 +131,8 @@ router
     );
 
 
+
+
 router
     .route('/admin/jobs')
     .get(
@@ -140,5 +148,12 @@ router
         authMiddleware.authorizeRoles(roles.ADMIN),
         jobController.deleteJob
     );
+
+
+router
+    .route('/intro')
+    .get(
+        jobController.getInfoIntro
+    )
 
 module.exports = router;

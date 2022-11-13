@@ -136,6 +136,11 @@ class CategoryService{
     async getCategoriesNoParentWithChildren() {
         return Category.find({ parent: undefined }).populate('children');
     }
+
+    async getCategoriesIntro(limit){
+        const allCategories = await Category.find({parent: null})
+        return allCategories.slice(0, limit)
+    }
 }
 
 module.exports = new CategoryService

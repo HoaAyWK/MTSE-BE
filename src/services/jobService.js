@@ -424,6 +424,23 @@ class JobService {
 
         return await taskService.finishTask(userId, job, taskId);
     }
+
+
+    async getIntro(){
+        const jobs = await Job.find({})
+        return jobs.length
+    }
+
+    async getNumJobsByCategoryAndSatus(categoryId, status){
+        const jobs = await Job.find({category: categoryId, status})
+        return jobs.length
+    }
+
+    async getNewestJobs(num, status){
+        const allJobs = await Job.find({status})
+        return allJobs.reverse().slice(0, num)
+    }
+
 };
 
 module.exports = new JobService;
