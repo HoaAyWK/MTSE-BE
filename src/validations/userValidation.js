@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const { password } = require('./customValidation');
+const { password, objectId } = require('./customValidation');
 
 const promoteToEmployer = {
     body: Joi.object().keys({
@@ -16,12 +16,14 @@ const promoteToEmployer = {
 
 const updateUser = {
     body: Joi.object().keys({
+        id: Joi.string().custom(objectId),
         name: Joi.string(),
         phone: Joi.string(),
         gender: Joi.string(),
         address: Joi.string(),
         city: Joi.string(),
         country: Joi.string(),
+        avatar: Joi.string().allow(null, ''),
         identityNumber: Joi.string(),
         introduction: Joi.string(),
         experience: Joi.string(),

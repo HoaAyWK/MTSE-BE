@@ -7,7 +7,8 @@ const { toJSON, paginate } = require('./plugins');
 const TransactionSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'User'
     },
     creditCardReceiver: {
         type: String,

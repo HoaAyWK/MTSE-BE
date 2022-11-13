@@ -7,7 +7,6 @@ const { offerStatus } = require('../config/offerStatus');
 const pointHistoryService = require('./pointHistoryService');
 const taskService = require('./taskService');
 const commentService = require('./commentService');
-const userService = require('./userService');
 const { getMonth } = require('../utils/getMonth');
 
 class JobService {
@@ -36,6 +35,10 @@ class JobService {
 
     async countJobsByCategory(categoryId) {
         return Job.count({ category: categoryId });
+    }
+
+    async updateJobsStatusByUser(user, status) {
+        return Job.updateMany({ owner: user, status: jobStatus.OPEN }, { $set: { status }});
     }
 
     async deleteJob(id) {
@@ -95,7 +98,33 @@ class JobService {
         return await offerService.getOffersByJob(jobId);
     }
 
-    async selectOffer(offer, wallet, job) {
+    async selectOffer(offerId, userId, jobId) {
+        if (!offerId) {
+            throw new ApiError(400, 'Request must have offerId');
+        }
+
+        const offer = await offerService.getOfferById(offerId);
+
+        if (!offer) {
+            throw new ApiError(400, 'Offer not found');
+        }
+
+        if (!jobId) {
+            throw new ApiError(400, 'Query must have jobId');
+        }
+
+        const job = await Job.findById(jobId);
+
+        if (!job) {
+            throw new ApiError(400, 'Job not found');
+        }
+
+        const wallet = await walletService.getWalletByUser(userId);
+
+        if (!wallet) {
+            throw new ApiError(400, 'Wallet not found');
+        }
+
         const threshold = offer.price * 0.3;
 
         if (wallet.points < threshold) {
@@ -109,8 +138,21 @@ class JobService {
         return offer;
     }
 
-    async pendingFreelancerStart(job) {
-        console.log(job);
+    async pendingFreelancerStart(jobId, userId) {
+        if (!jobId) {
+            throw new ApiError(400, 'Params must have jobId');
+        }
+
+        const job = await Job.findById(jobId);
+
+        if (!job) {
+            throw new ApiError(404, 'Job not found');
+        }
+
+        if (job.owner.toString() !== userId) {
+            throw new ApiError(400, 'You are not the owner of this job');
+        }
+
         if (job.status !== jobStatus.SELECTED_FREELANCER) {
             throw new ApiError(400, 'Can not pending start this job');
         }
@@ -122,7 +164,21 @@ class JobService {
     }
 
     // Freelancer accepts all the job's tasks and start to do the job
-    async startJob(userId, offer) {
+    async startJob(userId, offerId) {
+        if (!offerId) {
+            throw new ApiError(400, 'Query must have offerId');
+        }
+
+        const offer = await offerService.getOfferById(offerId);
+
+        if (!offer) {
+            throw new ApiError(400, 'Offer not found');
+        }
+
+        if (offer.freelancer.toString() !== userId) {
+            throw new ApiError(400, 'You do not have permission to start this job');
+        }
+
         const job = await Job.findById(offer.job); 
 
         if (!job) {
@@ -172,7 +228,21 @@ class JobService {
         return job;
     }
 
-    async doneJob(userId, job) {
+    async doneJob(userId, jobId) {
+        if (!jobId) {
+            throw new ApiError(400, 'Params must have jobId');
+        }
+
+        const job = await Job.findById(jobId);
+
+        if (!job) {
+            throw new ApiError(404, 'Job not found');
+        }
+
+        if (job.owner.toString() !== userId) {
+            throw new ApiError(400, 'You are not the owner of this job');
+        }
+
         if (job.status !== jobStatus.PROCESSING) {
             throw new ApiError(400, `Can not done this job! Only job with status "Processing" can mark as done.`);
         }

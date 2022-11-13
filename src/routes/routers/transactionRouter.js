@@ -17,6 +17,14 @@ router
     )
 
 router
+    .route('/admin/transactions/all')
+    .get(
+        authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.ADMIN),
+        transactionController.getTransactions
+    );
+
+router
     .route('/admin/transactions')
     .get(
         authMiddleware.isAuthenticated,

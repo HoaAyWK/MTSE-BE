@@ -102,7 +102,7 @@ class CategoryService{
         }
 
         if (category.children.length > 0) {
-            throw new ApiError(400, `Please delete all this children's category first!`);
+            throw new ApiError(400, `Please delete all this children categories first!`);
         }
 
         const jobsCount = await jobService.countJobsByCategory(id);

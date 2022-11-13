@@ -13,6 +13,8 @@ class AuthMiddleware {
             return next(new ApiError(401, 'You are not logged in'));
         }
 
+        console.log(token);
+
         const { sub } = jwt.verify(token.token, process.env.JWT_SECRET);
         const user = await userService.getUserById(sub);
 

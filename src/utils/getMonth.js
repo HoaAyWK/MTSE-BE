@@ -13,9 +13,7 @@ const getPast12Months = () => {
     for (let i = 11; i >= 0; i--) {
       const past = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const month = monthNames[past.getMonth()];
-      const year = past.getFullYear();
       months.push(month);
-      console.log(month, year);
     }
     
     return months;

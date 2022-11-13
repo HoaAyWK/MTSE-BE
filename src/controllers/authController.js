@@ -1,11 +1,7 @@
-const accountService = require('../services/accountService');
-const ApiError = require('../utils/ApiError');
 const authService = require('../services/authService');
 const tokenService = require('../services/tokenService');
-const userService = require('../services/userService');
 const sendToken = require('../utils/sendToken');
 const sendEmailService = require('../services/sendEmailService');
-const walletService = require('../services/walletService')
 class AuthController {
     async login(req, res, next) {
         try {
