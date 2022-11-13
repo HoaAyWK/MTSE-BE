@@ -52,14 +52,14 @@ class UserService{
             throw new ApiError(404, 'User not found');
         }
 
-
-        const updateData = updateBody;
-        if (updateBody.avatar) {
+        const { avatar, ...others } = updateBody;
+        const updateData = others;
+        if (avatar) {
             if (user.avatar)  {
                 await cloudinary.v2.uploader.destroy(user.avatar.public_id);
             }
         
-            const result = await cloudinary.v2.uploader.upload(updateBody.avatar, { folder: 'avatars' });
+            const result = await cloudinary.v2.uploader.upload(avatar, { folder: 'avatars' });
             updateData.avatar = {
                 public_id: result.public_id,
                 url: result.secure_url
