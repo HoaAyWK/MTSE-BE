@@ -9,7 +9,7 @@
     "prod": "SET NODE_ENV=PRODUCTION& nodemon src/server",
     "seeder": "node src/utils/seeder.js",
     "test": "mocha --timeout 10000 ./test",
-    "testFunc": "jest --testTimeout=10000",
+    "testFunc": "jest --testTimeout=10000"
   },
   "keywords": [],
   "author": "",
