@@ -48,7 +48,7 @@ class UserController{
     }
 
     async getUserProfile(req, res, next) {
-        const user = await userService.getUserById(req.user.id);
+        const user = await userService.getUserById(req.userId);
 
         if (!user) {
             return next(new ApiError(404, 'User not found'));

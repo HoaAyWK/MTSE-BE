@@ -5,6 +5,7 @@ const ApiError = require("../utils/ApiError");
 const { roles } = require('../config/roles');
 const { adminEmail, systemAdminEmail } = require('../config/constants');
 
+
 class UserService{
     async createUser(user){
         const newUser = new User(user)

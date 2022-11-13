@@ -12,13 +12,20 @@ const { getMonth } = require('../utils/getMonth');
 
 class JobService {
     async queryJobs(filter, options) {
-        return Job.paginate(filter, options);
+        const jobs = await Job.paginate(filter, options);
+        return jobs
     }
 
     async getJobs() {
         return Job.find()
             .populate({ path: 'owner', select: 'id name avatar email'})
             .populate({ path: 'category', select: 'id name' });
+    }
+
+    async getJobsPagination(num){
+        const jobs = await Job.find()
+
+        return jobs.slice(0, num)
     }
 
     async getJobById(id) {

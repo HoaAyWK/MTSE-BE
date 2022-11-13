@@ -5,13 +5,14 @@ const userController = require('../../controllers/userController');
 const { roles } = require('../../config/roles');
 const { userValidation } = require('../../validations');
 const validate = require('../../middlewares/validate');
-
+const verifyToken = require('../../middlewares/jwtFilter')
 const router = express.Router();
 
 router
     .route('/profile')
     .get(
-        authMiddleware.isAuthenticated,
+        /* authMiddleware.isAuthenticated, */
+        verifyToken,
         userController.getUserProfile)
     .put(
         authMiddleware.isAuthenticated,

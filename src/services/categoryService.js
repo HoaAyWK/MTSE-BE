@@ -141,6 +141,16 @@ class CategoryService{
         const allCategories = await Category.find({parent: null})
         return allCategories.slice(0, limit)
     }
+
+    async filterCategoriesByName(name){
+        const categories = await Category.find({'name': new RegExp(name)})
+        return categories
+    }
+
+    async getAllCategories(){
+        return await Category.find()
+    }
+
 }
 
 module.exports = new CategoryService

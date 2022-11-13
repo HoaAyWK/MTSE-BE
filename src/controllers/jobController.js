@@ -4,6 +4,7 @@ const userService = require('../services/userService')
 const pick = require('../utils/pick');
 const Job = require('../models/job');
 const categoryService = require('../services/categoryService');
+const offerService = require('../services/offerService');
 
 class JobController {
     async queryJobs(req, res, next) {
@@ -23,6 +24,7 @@ class JobController {
 
     async getJobs(req, res, next) {
         try {
+
             const jobs = await jobService.getJobs();
 
             res.status(200).json({
@@ -39,14 +41,42 @@ class JobController {
         try {
             const filter = pick(req.query, ['name', 'status']);
             const options = pick(req.query, ['sortBy', 'limit', 'page', 'exclude']);
+            const query = pick(req.query, ['categoryName']);
 
             filter.user = req.params.id;
             
-            const result = await jobService.queryJobs(filter, options);
+            const queryJobs = await jobService.queryJobs(filter, options);
+
+
+
+            /* if (query.categoryName){
+                const dataCategories = await categoryService.filterCategoriesByName(query.categoryName)
+                console.log(dataCategories)
+                queryJobs.results.forEach(job => {
+                    dataCategories.forEach(category => {
+                        console.log("job")
+                        console.log(job.category)
+                        console.log("category")
+                        console.log(category._id)
+                        if (job.category === category.id){
+                            console.log("OK")
+                            jobs.push(job)
+                            
+                        }
+                    })
+                })
+            }
+ */
+            var categories = []
+            for (var i=0; i<queryJobs.results.length; i++){
+                var category = await categoryService.getCategoryById(queryJobs.results[i].category)
+                categories.push(category)
+            }
 
             res.status(200).json({
                 success: true,
-                ...result
+                categories,
+                ...queryJobs
             });
         } catch (error) {
             next(error);
@@ -58,12 +88,25 @@ class JobController {
             const filter = pick(req.query, ['name', 'status']);
             const options = pick(req.query, ['sortBy', 'limit', 'page', 'exclude']);
 
-            filter.user = req.user.id;
+            filter.user = req.userId;
 
             const result = await jobService.queryJobs(filter, options);
 
+            var categories = []
+
+            var offers = []
+            
+            for (var i = 0; i <result.results.length; i++){
+                var category = await categoryService.getCategoryById(result.results[i].category)
+                var offer = await offerService.getOffersByJob(result.results[i].id)
+                offers.push(offer.length)
+                categories.push(category)
+            }
+
             res.status(200).json({
                 success: true,
+                categories,
+                offers,
                 ...result
             });
         } catch (error) {
@@ -92,6 +135,7 @@ class JobController {
     async getJob(req, res, next) {
         try {
             const job = await jobService.getJobById(req.params.id);
+            const user = await userService.getUserById(job.owner)
 
             if (!job) {
                 throw new ApiError(404, 'Job not found');
@@ -99,7 +143,8 @@ class JobController {
 
             res.status(200).json({
                 success: true,
-                job
+                job,
+                user
             });
         } catch (error) {
             next(error);
@@ -109,7 +154,12 @@ class JobController {
     async createJob(req, res, next) {
         try {
             const jobData = req.body;
-            jobData.owner = req.user.id;
+            jobData.owner = req.userId;
+
+            const user = await userService.getUserById(req.userId)
+            if (!user.roles.includes('employer')){
+                return res.json({success: false, message: "Permission"})
+            }
 
             const job = await jobService.createJob(jobData);
 

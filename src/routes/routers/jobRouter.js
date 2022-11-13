@@ -9,7 +9,7 @@ const validate = require('../../middlewares/validate');
 const offerMiddleware = require('../../middlewares/offer');
 const walletMiddleware = require('../../middlewares/wallet');
 const jobMiddleware = require('../../middlewares/job');
-
+const verifyToken = require('../../middlewares/jwtFilter')
 const router = Router();
 
 router
@@ -21,6 +21,10 @@ router
 router
     .route('/jobs')
     .get(jobController.queryJobs);
+
+router
+    .route('/jobs/search')
+    .get(jobController.getJobsByUser)
 
 router
     .route('/jobs/:id')
@@ -35,9 +39,9 @@ router
 router
     .route('/my/jobs')
     .get(
-        authMiddleware.isAuthenticated,
-        authMiddleware.isAuthenticated,
-        authMiddleware.authorizeRoles(roles.EMPLOYER),
+        /* authMiddleware.isAuthenticated,
+        authMiddleware.authorizeRoles(roles.EMPLOYER), */
+        verifyToken,
         jobController.getCurrentEmployerJobs
     );
 
@@ -52,10 +56,11 @@ router
 router
     .route('/jobs/create')
     .post(
-        authMiddleware.isAuthenticated,
+        /* authMiddleware.isAuthenticated,
         authMiddleware.authorizeRoles(roles.EMPLOYER),
         ownerMiddleware.isEmployerProvideEnoughInfo,
-        validate(jobValidation.createJob),
+        validate(jobValidation.createJob), */
+        verifyToken,
         jobController.createJob
     );
 

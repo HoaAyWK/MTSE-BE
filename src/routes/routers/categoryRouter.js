@@ -38,6 +38,10 @@ router
     .get(categoryController.getCategoriesIntro)
 
 router
+    .route('/categories/all')
+    .get(categoryController.getAllCategories)
+
+router
     .route('/categories')
     .get(categoryController.getCategoriesNoParentWithChildren);
 

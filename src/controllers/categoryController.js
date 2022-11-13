@@ -149,6 +149,17 @@ class CategoryController{
         return res.json(categories)
     }
 
+    async getAllCategories(req, res){
+        try{
+            const categories = await categoryService.getAllCategories()
+
+            return res.status(200).json({succcess: true, categories})
+        }
+        catch(error){
+            return res.status(500).json({success: false, message: "Internal Error Server"})
+        }
+    }
+
 }
 
 module.exports = new CategoryController
