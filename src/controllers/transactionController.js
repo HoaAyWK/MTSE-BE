@@ -17,6 +17,19 @@ class TransactionController{
         }
     }
 
+    async getTransactions(req, res, next) {
+        try {
+            const transactions = await transactionService.getTransactions();
+
+            res.status(200).json({
+                success: true,
+                transactions
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async saveTransaction(req, res, next) {
         try {
             const transaction = req.body;
