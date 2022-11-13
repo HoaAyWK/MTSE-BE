@@ -14,6 +14,11 @@ class TransactionService {
         return newTransaction
     }
 
+    async getTransactions() {
+        return Transaction.find()
+            .populate({ path: 'user', select: 'id name email avatar' })
+            .sort({ createdAt: 'desc' });
+    }
 
     async changeSubmit(transactionId){
         const transaction = await Transaction.findById(transactionId);
