@@ -21,13 +21,18 @@ class AuthController {
             const { email, name, password, phone } = req.body;
             
             const token = await authService.register(email, name, phone, password);
-            const confirmationEmailUrl = `${req.protocol}://${req.get('host')}/api/v1/email/confirm/${token}`;
-            const message = `Your confirmation email token is as follow:\n\n${confirmationEmailUrl}\n\nIf you have not requested this email, then ignore it.`;
+            const content =  `
+                <div>
+                    <h3>If you have not requested this email, then ignore it</h3>
+                    <h3>Click the link bellow to confirm your email</h3>
+                    <a href="${req.protocol}://${req.get('host')}/api/v1/email/confirm/${token}">Confirm Email</a>
+                </div>
+            `;
 
-            await sendEmailService.sendEmail({
+            sendEmailService.sendEmail({
                 email,
                 subject: 'Confirm Your Email',
-                message
+                message: content
             });
             
             res.status(200).json({
@@ -56,14 +61,18 @@ class AuthController {
         try {
             const { email } = req.body;
             const resetToken = await tokenService.generateResetPasswordToken(email);
-            const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/password/reset/${resetToken}`;
-            const message = `Your password reset token is as follow:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`;
-
+            const content =  `
+                <div>
+                    <h3>If you have not requested this email, then ignore it</h3>
+                    <h3>Click the link bellow to reset your password</h3>
+                    <a href="${req.protocol}://${req.get('host')}/api/v1/password/reset/${resetToken}">Rest password</a>
+                </div>
+            `;
            
-            await sendEmailService.sendEmail({
+            sendEmailService.sendEmail({
                 email,
-                subject: 'Frl password recovery',
-                message
+                subject: '5Job password recovery',
+                message: content
             });
         
             res.status(200).json({
